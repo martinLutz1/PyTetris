@@ -1,98 +1,46 @@
-from enum import Enum
-from tkinter.tix import DirSelectBox
-from typing import List
+
 import pygame
-import numpy
+import time
+from Tetris import Tetris
+from TetrisPainter import TetrisPainter
+from KeyPressHandler import KeyPressHandler
+from Common import Direction
 
-
-class Direction(Enum):
-    UP = 0
-    DOWN = 1
-    LEFT = 2
-    RIGHT = 3
-
-
-class Position:
-    x: int
-    y: int
-
-
-class Figure:
-    position: Position
-    directions: list
-
-    def __init__(self, position, directions):
-        self.position = position
-        self.directions = directions
-
-
-class FigureBuilder:
-    class FigureType(Enum):
-        I = 0
-        O = 1
-        T = 2
-        S = 3
-        Z = 4
-        J = 5
-        L = 6
-
-    def new(position, figure_type) -> Figure:
-        match figure_type:
-            case FigureBuilder.FigureType.I:
-                return Figure(position, [Direction.DOWN, Direction.DOWN, Direction.DOWN])
-            case FigureBuilder.FigureType.O:
-                return Figure(position, [Direction.DOWN, Direction.RIGHT, Direction.UP])
-            case FigureBuilder.FigureType.I:
-                return Figure(position, [Direction.DOWN, Direction.DOWN, Direction.DOWN])
-            case FigureBuilder.FigureType.L:
-                return Figure(position, [Direction.DOWN, Direction.DOWN, Direction.RIGHT])
-
-
-def create_figure():
-    return Figure()
-
-
-class Tetris:
-    number_of_rows: int
-    number_of_columns: int
-    field: numpy.ndarray
-    figures: list
-
-    def _init_figures(self):
-        self.figures.append(Figure())
-
-    def __init__(self, number_of_rows, number_of_columns):
-        self.number_of_rows = number_of_rows
-        self.number_of_columns = number_of_columns
-        self.field = numpy.full((number_of_rows, number_of_columns), False)
-
-        self._init_figures()
-
-    def spawn_figure(self):
-
-        # Import and initialize the pygame library
 pygame.init()
+tetris = Tetris(20, 10)
+tetris_painter = TetrisPainter(
+    400, 800, tetris.number_of_rows, tetris.number_of_columns)
 
-# Set up the drawing window
-screen = pygame.display.set_mode([500, 500])
+fps = 120
+fpsClock = pygame.time.Clock()
 
-# Run until the user asks to quit
+key_press_handler = KeyPressHandler()
+ms_until_long_press = 150
+ms_elapsed_since_last_key_down = 0
+
 running = True
 while running:
+    key_press_handler.update_pressed_keys()
 
-    # Did the user click the window close button?
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    if key_press_handler.is_quit_pressed:
+        running = False
 
-    # Fill the background with white
-    screen.fill((255, 255, 255))
+    for direction in [Direction.RIGHT, Direction.LEFT, Direction.DOWN, Direction.UP]:
+        if key_press_handler.is_direction_key_pressed[direction.value]:
+            ms_elapsed_now = time.time() * 1000
+            if ms_elapsed_since_last_key_down == 0:
+                ms_elapsed_since_last_key_down = ms_elapsed_now
+                tetris.move(direction)
 
-    # Draw a solid blue circle in the center
-    pygame.draw.circle(screen, (0, 0, 255), (250, 250), 75)
+            if (ms_elapsed_now - ms_elapsed_since_last_key_down) >= ms_until_long_press:
+                tetris.move(direction)
 
-    # Flip the display
-    pygame.display.flip()
+    if not (True in key_press_handler.is_direction_key_pressed):
+        ms_elapsed_since_last_key_down = 0
 
-# Done! Time to quit.
+    tetris.update()
+    tetris_painter.draw(tetris.figures, tetris.number_of_rows,
+                        tetris.number_of_columns)
+    fpsClock.tick(fps)
+
 pygame.quit()
