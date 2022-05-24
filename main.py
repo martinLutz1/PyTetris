@@ -11,7 +11,7 @@ tetris = Tetris(20, 10)
 tetris_painter = TetrisPainter(
     400, 800, tetris.number_of_rows, tetris.number_of_columns)
 
-fps = 120
+fps = 40
 fpsClock = pygame.time.Clock()
 
 key_press_handler = KeyPressHandler()

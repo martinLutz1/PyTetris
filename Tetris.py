@@ -54,9 +54,17 @@ class Tetris:
                     return self.field[int(
                         position.x)][int(new_y_position)]
 
-        for used_point in figure.get_used_points():
-            if collides(used_point, direction):
+        for used_point in figure.get_next_move_used_points(direction):
+            # Horizontal border collision
+            if (used_point.x < 0) or (used_point.x >= self.number_of_columns):
                 return True
+            # Vertical border collision
+            if (used_point.y < 0) or (used_point.y >= self.number_of_rows):
+                return True
+            if self.field[int(
+                    used_point.x)][int(used_point.y)]:
+                return True
+
         return False
 
     def _move_internal(self, direction: Direction):
@@ -65,6 +73,12 @@ class Tetris:
                 for used_point in self.figures[-1].get_used_points():
                     self.field[int(used_point.x)][int(used_point.y)] = True
                 self.spawn_figure(Position(self.number_of_columns / 2, 1))
+                if self._move_collides(self.figures[-1], direction):
+                    # TODO: Handle gameover
+                    self.figures = []
+                    self.field = numpy.full(
+                        (self.number_of_columns, self.number_of_rows), False)
+                    self.spawn_figure(Position(self.number_of_columns / 2, 1))
             return
         self.figures[-1].move(direction)
 
