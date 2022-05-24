@@ -1,13 +1,14 @@
+from copy import deepcopy
+import numpy
 import pygame
-from Figures import Figure
-from typing import List
-from Common import Direction
+from Figures import Figure, Position
+from typing import List, Optional
 from pygame import gfxdraw
 
 
 def draw_rounded_rect(surface, rect, color, corner_radius):
     ''' Draw a rectangle with rounded corners.
-    Would prefer this: 
+    Would prefer this:
         pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
     but this option is not yet supported in my version of pygame so do it ourselves.
 
@@ -78,6 +79,8 @@ class TetrisPainter:
     figure_width: int
     figure_height: int
     screen: pygame.Surface
+    background_color: pygame.Color = (255, 255, 255)
+    last_drawn_figure: Optional[Figure] = None
 
     def __init__(self, screen_width: int, screen_height: int, number_of_rows: int, number_of_columns: int):
         self.screen_width = screen_width
@@ -87,25 +90,50 @@ class TetrisPainter:
         self.figure_width = screen_width / number_of_columns
         self.figure_height = screen_height / number_of_rows
         self.screen = pygame.display.set_mode([screen_width, screen_height])
+        self.screen.fill(self.background_color)
+
+    def _get_screen_position_x(self, xPosition):
+        return xPosition * \
+            (self.screen_width / self.number_of_columns)
+
+    def _get_screen_position_y(self, yPosition):
+        return yPosition * \
+            (self.screen_height / self.number_of_rows)
+
+    def _draw_block(self, position: Position, color: pygame.Color):
+        draw_bordered_rounded_rect(self.screen,
+                                   pygame.Rect(self._get_screen_position_x(position.x), self._get_screen_position_y(position.y),
+                                               self.figure_width, self.figure_height),
+
+                                   color,
+                                   (30, 30, 30), 10, 5)
+
+    def _clear_last_figure(self):
+        if self.last_drawn_figure != None:
+            for point in self.last_drawn_figure.get_used_points():
+                pygame.draw.rect(self.screen, self.background_color, pygame.Rect(self._get_screen_position_x(point.x), self._get_screen_position_y(point.y),
+                                 self.figure_width, self.figure_height))
 
     def _draw_figure(self, figure: Figure):
-        def getScreenPositionX(xPosition):
-            return xPosition * \
-                (self.screen_width / self.number_of_columns)
-
-        def getScreenPositionY(yPosition):
-            return yPosition * \
-                (self.screen_height / self.number_of_rows)
-
         for point in figure.get_used_points():
-            draw_bordered_rounded_rect(self.screen,
-                                       pygame.Rect(getScreenPositionX(point.x), getScreenPositionY(point.y), self.figure_width, self.figure_height), figure.color, (30, 30, 30), 10, 5)
+            self._draw_block(point, figure.color)
 
-    def draw(self, figures: List[Figure], number_of_rows: int, number_of_columns: int):
+    def draw_figure(self, figure: Figure, is_new_figure: bool):
+        if not is_new_figure:
+            self._clear_last_figure()
+        self._draw_figure(figure)
+        self.last_drawn_figure = deepcopy(figure)
+
+        pygame.display.flip()
+        pygame.display.update()
+
+    def redraw_all(self, field: numpy.ndarray):
         self.screen.fill((255, 255, 255))
 
-        for figure in figures:
-            self._draw_figure(figure)
+        for x in range(self.number_of_rows):
+            for y in range(self.number_of_columns):
+                if field[x][y]:
+                    self._draw_block(Position(y, x), field[x, y])
 
         pygame.display.flip()
         pygame.display.update()

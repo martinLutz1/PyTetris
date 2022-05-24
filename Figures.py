@@ -79,7 +79,6 @@ class FigureBuilder:
         L = 6
 
     def new(position, figure_type: FigureType) -> Figure:
-
         match figure_type:
             case FigureBuilder.FigureType.I:
                 horizontal_description = [
@@ -136,5 +135,5 @@ class FigureBuilder:
                 horizontal_description = [
                     Position(0, 1), Position(-1, 1), Position(1, 0)]
                 vertical_description = [
-                    Position(0, -1), Position(-1, 0), Position(-1, 1)]
+                    Position(0, -1), Position(1, 0), Position(1, 1)]
                 return Figure(position, [horizontal_description, vertical_description],  Color(7, 240, 1))

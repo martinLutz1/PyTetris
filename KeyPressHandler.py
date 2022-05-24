@@ -1,6 +1,5 @@
 import pygame
 from Common import Direction
-import time
 
 
 class KeyPressHandler:
