@@ -81,6 +81,8 @@ class TetrisPainter:
     screen: pygame.Surface
     background_color: pygame.Color = (255, 255, 255)
     last_drawn_figure: Optional[Figure] = None
+    font: pygame.font.Font
+    score_position: Position
 
     def __init__(self, screen_width: int, screen_height: int, number_of_rows: int, number_of_columns: int):
         self.screen_width = screen_width
@@ -91,6 +93,8 @@ class TetrisPainter:
         self.figure_height = screen_height / number_of_rows
         self.screen = pygame.display.set_mode([screen_width, screen_height])
         self.screen.fill(self.background_color)
+        self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 32)
+        self.score_position = (screen_width * (14/20), screen_height * (1/20))
 
     def _get_screen_position_x(self, xPosition):
         return xPosition * \
@@ -118,6 +122,14 @@ class TetrisPainter:
         for point in figure.get_used_points():
             self._draw_block(point, figure.color)
 
+    def _draw_score(self, score: int):
+        score_as_string = "Score: " + str(score)
+
+        text_surface = self.font.render(
+            score_as_string, True, (30, 30, 30))
+        text_rect = text_surface.get_rect(center=self.score_position)
+        self.screen.blit(text_surface, text_rect)
+
     def draw_figure(self, figure: Figure, is_new_figure: bool):
         if figure is self.last_drawn_figure:
             return
@@ -136,9 +148,6 @@ class TetrisPainter:
             for x in range(field.shape[1]):
                 if field[y][x]:
                     self._draw_block(Position(x, y), field[y, x])
-
-        pygame.display.flip()
-        pygame.display.update()
 
     def update(self):
         pygame.display.flip()

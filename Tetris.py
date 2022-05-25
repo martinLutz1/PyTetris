@@ -1,10 +1,10 @@
 from copy import deepcopy
-import pygame
 from typing import Optional
 import numpy
 import random
 import time
 from Figures import *
+from Player import Player
 
 
 class StatusInfo:
@@ -23,6 +23,7 @@ class Tetris:
     update_interval_ms: int = 500
     min_move_interval_ms: int = 50
     status_info = StatusInfo()
+    player = Player()
 
     def __init__(self, number_of_rows: int, number_of_columns: int):
         self.number_of_rows = number_of_rows
@@ -53,6 +54,7 @@ class Tetris:
             (self.number_of_rows, self.number_of_columns), None)
         self.spawn_figure(Position(int(self.number_of_columns / 2), 1))
         self.status_info.is_game_over = True
+        self.player.reset()
 
     def _move_internal(self, direction: Direction):
         if not self._move_collides(self.moving_figure, direction):
@@ -92,7 +94,12 @@ class Tetris:
         self.field = numpy.insert(self.field, numpy.zeros(
             len(rows_to_delete), dtype=int), None, axis=0)
 
-        return len(rows_to_delete) > 0
+        if len(rows_to_delete) > 0:
+            scoring_points = 10 * len(rows_to_delete) * len(rows_to_delete)
+            self.player.add_to_score(scoring_points)
+            return True
+        else:
+            return False
 
     def update(self):
         ms_elapsed_now = time.time() * 1000
