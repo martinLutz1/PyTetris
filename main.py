@@ -15,8 +15,7 @@ key_press_handler = KeyPressHandler()
 ms_until_long_press = 150
 ms_elapsed_since_last_key_down = 0
 tetris = Tetris(20, 10)
-tetris_painter = TetrisPainter(
-    400, 800, tetris.number_of_rows, tetris.number_of_columns)
+tetris_painter = TetrisPainter(tetris.number_of_rows, tetris.number_of_columns)
 
 
 def draw_on_update():

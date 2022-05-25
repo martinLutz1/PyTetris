@@ -24,7 +24,10 @@ class KeyPressHandler:
                 self.is_quit_pressed = True
             if event.type == pygame.KEYDOWN:
                 direction_key_index = self._to_index(event.key)
-                self.is_direction_key_pressed[direction_key_index] = True
+                if direction_key_index != -1:
+                    self.is_direction_key_pressed[direction_key_index] = True
+                elif event.key == pygame.K_ESCAPE:
+                    self.is_quit_pressed = True
             elif event.type == pygame.KEYUP:
                 direction_key_index = self._to_index(event.key)
                 if direction_key_index != -1:
