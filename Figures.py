@@ -49,11 +49,9 @@ class Figure:
                 self.position.y += 1
 
     def _get_used_points_internal(self, position: Position, figure_description: FigureDescription) -> list[Position]:
-        used_points = [position]
-        for relative_position in figure_description:
-            absolute_x = used_points[0].x + relative_position.x
-            absolute_y = used_points[0].y + relative_position.y
-            used_points.append(Position(absolute_x, absolute_y))
+        used_points = [Position(position.x + rel_pos.x, position.y + rel_pos.y)
+                       for rel_pos in figure_description]
+        used_points.append(position)
         return used_points
 
     def get_next_move_used_points(self, direction: Direction) -> list[Position]:

@@ -62,7 +62,7 @@ while running:
     if tetris.is_game_over():
         tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
 
-    tetris_painter._draw_score(tetris.player.score)
+    tetris_painter.draw_score(tetris.player.score)
 
     tetris_painter.update()
     fpsClock.tick(fps)

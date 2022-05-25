@@ -108,7 +108,8 @@ class TetrisPainter:
     number_of_columns: int
 
     def __init__(self, number_of_rows: int, number_of_columns: int):
-        (screen_width, screen_height) = pygame.display.get_desktop_sizes()[0]
+        screen_width = pygame.display.Info().current_w
+        screen_height = pygame.display.Info().current_h
         tetris_area_width = screen_height / 2
         x_screen_offset = (screen_width - tetris_area_width) / 2
         score_position = screen_width - 140, 60
@@ -182,7 +183,7 @@ class TetrisPainter:
         for point in figure.get_used_points():
             self._draw_block(point, figure.block_color)
 
-    def _draw_score(self, score: int):
+    def draw_score(self, score: int):
         score_as_string = "Score: " + str(score)
 
         text_surface = self.font.render(
