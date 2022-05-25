@@ -7,18 +7,30 @@ from KeyPressHandler import KeyPressHandler
 from Common import Direction
 
 pygame.init()
+
+fps = 60
+fpsClock = pygame.time.Clock()
+running = True
+key_press_handler = KeyPressHandler()
+ms_until_long_press = 150
+ms_elapsed_since_last_key_down = 0
 tetris = Tetris(20, 10)
 tetris_painter = TetrisPainter(
     400, 800, tetris.number_of_rows, tetris.number_of_columns)
 
-fps = 60
-fpsClock = pygame.time.Clock()
 
-key_press_handler = KeyPressHandler()
-ms_until_long_press = 150
-ms_elapsed_since_last_key_down = 0
+def draw_on_update():
+    if tetris.has_spawned_figure():
+        if tetris.check_rows():
+            tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
+        else:
+            tetris_painter.draw_figure(
+                tetris.moving_figure, True)
+    else:
+        tetris_painter.draw_figure(
+            tetris.moving_figure, False)
 
-running = True
+
 while running:
     key_press_handler.update_pressed_keys()
 
@@ -33,25 +45,25 @@ while running:
             # First registered key press
             if ms_elapsed_since_last_key_down == 0:
                 ms_elapsed_since_last_key_down = ms_elapsed_now
-                if tetris.move(direction):
-                    is_new_figure_spawned = True
+                tetris.move(direction)
             # Long key press
             elif (ms_elapsed_now - ms_elapsed_since_last_key_down) >= ms_until_long_press:
-                if tetris.move(direction):
-                    is_new_figure_spawned = True
+                tetris.move(direction)
 
     if not (True in key_press_handler.is_direction_key_pressed):
         ms_elapsed_since_last_key_down = 0
 
-    if tetris.update():
-        is_new_figure_spawned = True
+    if tetris.has_moved():
+        draw_on_update()
 
-    # Scored, rows were deleted -> redraw
-    if is_new_figure_spawned and tetris.check_rows():
-        tetris_painter.redraw_all(tetris.field)
-    else:
-        tetris_painter.draw_figure(tetris.moving_figure, is_new_figure_spawned)
+    tetris.update()
+    if tetris.has_moved():
+        draw_on_update()
 
+    if tetris.is_game_over():
+        tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
+
+    tetris_painter.update()
     fpsClock.tick(fps)
 
 pygame.quit()

@@ -119,21 +119,27 @@ class TetrisPainter:
             self._draw_block(point, figure.color)
 
     def draw_figure(self, figure: Figure, is_new_figure: bool):
+        if figure is self.last_drawn_figure:
+            return
+
         if not is_new_figure:
             self._clear_last_figure()
         self._draw_figure(figure)
         self.last_drawn_figure = deepcopy(figure)
 
+    def redraw_all(self, field: numpy.ndarray, figure: Figure):
+        self.screen.fill((255, 255, 255))
+        self._draw_figure(figure)
+        self.last_drawn_figure = deepcopy(figure)
+
+        for y in range(field.shape[0]):
+            for x in range(field.shape[1]):
+                if field[y][x]:
+                    self._draw_block(Position(x, y), field[y, x])
+
         pygame.display.flip()
         pygame.display.update()
 
-    def redraw_all(self, field: numpy.ndarray):
-        self.screen.fill((255, 255, 255))
-
-        for x in range(self.number_of_rows):
-            for y in range(self.number_of_columns):
-                if field[x][y]:
-                    self._draw_block(Position(y, x), field[x, y])
-
+    def update(self):
         pygame.display.flip()
         pygame.display.update()
