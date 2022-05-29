@@ -74,8 +74,9 @@ class TetrisPainter:
     last_drawn_figure: Optional[Figure] = None
     number_of_rows: int
     number_of_columns: int
+    number_of_offscreen_rows: int
 
-    def __init__(self, number_of_rows: int, number_of_columns: int):
+    def __init__(self, number_of_rows: int, number_of_columns: int, number_of_offscreen_rows: int):
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         self.screen = pygame.display.set_mode([screen_width, screen_height])
@@ -87,13 +88,15 @@ class TetrisPainter:
             screen_width, screen_height, tetris_area_width, x_screen_offset)
 
         block_width = tetris_area_width / number_of_columns
-        block_height = tetris_area_width / number_of_columns
+        block_height = screen_height / \
+            (number_of_rows - number_of_offscreen_rows)
         block_border_thickness = int(block_width / 8)
         self.block_description = BlockDescription(
             block_width, block_height, block_border_thickness)
 
         self.number_of_rows = number_of_rows
         self.number_of_columns = number_of_columns
+        self.number_of_offscreen_rows = number_of_offscreen_rows
 
         self._draw_background()
         self.score.update(0)
@@ -121,19 +124,24 @@ class TetrisPainter:
         return xPosition * (self.view_description.tetris_width / self.number_of_columns) + self.view_description.x_screen_offset
 
     def _get_screen_position_y(self, yPosition):
-        return yPosition * (self.view_description.screen_height / self.number_of_rows)
+        return (yPosition - self.number_of_offscreen_rows) * (self.view_description.screen_height / (self.number_of_rows - self.number_of_offscreen_rows))
 
     def _draw_block(self, position: Position, block_color: BlockColor):
+        if position.y < self.number_of_offscreen_rows - 1:
+            return
+
         block_rect = pygame.Rect(self._get_screen_position_x(position.x),
                                  self._get_screen_position_y(position.y),
                                  self.block_description.width,
                                  self.block_description.height)
         draw_bordered_rounded_rect(self.screen, deepcopy(block_rect), block_color.body_color,
                                    block_color.border_color, 10, self.block_description.border_thickness)
-
         pygame.display.update(block_rect)
 
     def _clear_last_figure(self):
+        if self.last_drawn_figure.position.y < self.number_of_offscreen_rows - 1:
+            return
+
         if self.last_drawn_figure != None:
             for block in self.last_drawn_figure.get_blocks():
                 block_rect = pygame.Rect(self._get_screen_position_x(block.x),

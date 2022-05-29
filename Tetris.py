@@ -63,8 +63,8 @@ class Tetris:
             return
 
         if direction == Direction.DOWN:
-            for used_point in self.moving_figure.get_blocks():
-                self.field[used_point.y][used_point.x] = self.moving_figure.block_color
+            for block in self.moving_figure.get_blocks():
+                self.field[block.y][block.x] = self.moving_figure.block_color
 
             self.spawn_figure(Position(int(self.number_of_columns / 2), 1))
 
