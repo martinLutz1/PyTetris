@@ -24,20 +24,15 @@ def draw_on_update():
             tetris_painter.score.update(tetris.player.score)
             tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
         else:
-            tetris_painter.draw_figure(
-                tetris.moving_figure, True)
+            tetris_painter.draw_figure(tetris.moving_figure, True)
     else:
-        tetris_painter.draw_figure(
-            tetris.moving_figure, False)
+        tetris_painter.draw_figure(tetris.moving_figure, False)
 
 
 while running:
     key_press_handler.update_pressed_keys()
-
     if key_press_handler.is_quit_pressed:
         running = False
-
-    is_new_figure_spawned = False
 
     for direction in [Direction.RIGHT, Direction.LEFT, Direction.DOWN, Direction.UP]:
         if key_press_handler.is_direction_key_pressed[direction.value]:
@@ -63,7 +58,6 @@ while running:
     if tetris.is_game_over():
         tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
 
-    tetris_painter.update()
     fpsClock.tick(fps)
 
 pygame.quit()

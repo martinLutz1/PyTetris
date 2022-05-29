@@ -1,75 +1,11 @@
 from copy import deepcopy
 import numpy
 import pygame
-from Figures import BlockColor, Figure, Position
 from typing import List, Optional
-from pygame import gfxdraw, Color
 
+from Figures import BlockColor, Figure, Position
+from DrawSupport import *
 from TextWall import TextWall
-
-
-def draw_rounded_rect(surface, rect, color, corner_radius):
-    ''' Draw a rectangle with rounded corners.
-    Would prefer this:
-        pygame.draw.rect(surface, color, rect, border_radius=corner_radius)
-    but this option is not yet supported in my version of pygame so do it ourselves.
-
-    We use anti-aliased circles to make the corners smoother
-    '''
-    if rect.width < 2 * corner_radius or rect.height < 2 * corner_radius:
-        raise ValueError(
-            f"Both height (rect.height) and width (rect.width) must be > 2 * corner radius ({corner_radius})")
-
-    # need to use anti aliasing circle drawing routines to smooth the corners
-    pygame.gfxdraw.aacircle(surface, rect.left+corner_radius,
-                            rect.top+corner_radius, corner_radius, color)
-    pygame.gfxdraw.aacircle(surface, rect.right-corner_radius-1,
-                            rect.top+corner_radius, corner_radius, color)
-    pygame.gfxdraw.aacircle(surface, rect.left+corner_radius,
-                            rect.bottom-corner_radius-1, corner_radius, color)
-    pygame.gfxdraw.aacircle(surface, rect.right-corner_radius-1,
-                            rect.bottom-corner_radius-1, corner_radius, color)
-
-    pygame.gfxdraw.filled_circle(
-        surface, rect.left+corner_radius, rect.top+corner_radius, corner_radius, color)
-    pygame.gfxdraw.filled_circle(
-        surface, rect.right-corner_radius-1, rect.top+corner_radius, corner_radius, color)
-    pygame.gfxdraw.filled_circle(
-        surface, rect.left+corner_radius, rect.bottom-corner_radius-1, corner_radius, color)
-    pygame.gfxdraw.filled_circle(
-        surface, rect.right-corner_radius-1, rect.bottom-corner_radius-1, corner_radius, color)
-
-    rect_tmp = pygame.Rect(rect)
-
-    rect_tmp.width -= 2 * corner_radius
-    rect_tmp.center = rect.center
-    pygame.draw.rect(surface, color, rect_tmp)
-
-    rect_tmp.width = rect.width
-    rect_tmp.height -= 2 * corner_radius
-    rect_tmp.center = rect.center
-    pygame.draw.rect(surface, color, rect_tmp)
-
-
-def draw_bordered_rounded_rect(surface, rect, color, border_color, corner_radius, border_thickness):
-    if corner_radius < 0:
-        raise ValueError(f"border radius ({corner_radius}) must be >= 0")
-
-    if border_thickness:
-        if corner_radius <= 0:
-            pygame.draw.rect(surface, border_color, rect)
-        else:
-            draw_rounded_rect(surface, rect, border_color, corner_radius)
-
-        rect.inflate_ip(-2*border_thickness, -2*border_thickness)
-        inner_radius = corner_radius - border_thickness + 1
-    else:
-        inner_radius = corner_radius
-
-    if inner_radius <= 0:
-        pygame.draw.rect(surface, color, rect)
-    else:
-        draw_rounded_rect(surface, rect, color, inner_radius)
 
 
 class BlockDescription:
@@ -188,27 +124,25 @@ class TetrisPainter:
         return yPosition * (self.view_description.screen_height / self.number_of_rows)
 
     def _draw_block(self, position: Position, block_color: BlockColor):
-        draw_bordered_rounded_rect(
-            self.screen,
-            pygame.Rect(self._get_screen_position_x(position.x),
-                        self._get_screen_position_y(position.y),
-                        self.block_description.width,
-                        self.block_description.height),
-            block_color.body_color,
-            block_color.border_color,
-            10,
-            self.block_description.border_thickness)
+        block_rect = pygame.Rect(self._get_screen_position_x(position.x),
+                                 self._get_screen_position_y(position.y),
+                                 self.block_description.width,
+                                 self.block_description.height)
+        draw_bordered_rounded_rect(self.screen, deepcopy(block_rect), block_color.body_color,
+                                   block_color.border_color, 10, self.block_description.border_thickness)
+
+        pygame.display.update(block_rect)
 
     def _clear_last_figure(self):
         if self.last_drawn_figure != None:
             for point in self.last_drawn_figure.get_used_points():
+                point_rect = pygame.Rect(self._get_screen_position_x(point.x),
+                                         self._get_screen_position_y(point.y),
+                                         self.block_description.width,
+                                         self.block_description.height)
                 pygame.draw.rect(
-                    self.screen,
-                    self.background_color,
-                    pygame.Rect(self._get_screen_position_x(point.x),
-                                self._get_screen_position_y(point.y),
-                                self.block_description.width,
-                                self.block_description.height))
+                    self.screen, self.background_color, point_rect)
+                pygame.display.update(point_rect)
 
     def _draw_figure(self, figure: Figure):
         for point in figure.get_used_points():
@@ -234,7 +168,4 @@ class TetrisPainter:
                     self._draw_block(Position(x, y), field[y, x])
 
         self.score.draw()
-
-    def update(self):
-        pygame.display.flip()
         pygame.display.update()
