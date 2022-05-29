@@ -36,15 +36,15 @@ class Tetris:
         self.status_info.has_spawned_figure = True
 
     def _move_collides(self, figure: Figure, direction: Direction) -> bool:
-        for used_point in figure.get_next_move_used_points(direction):
+        for block in figure.get_blocks_for_next_move(direction):
             # Horizontal border collision
-            if (used_point.x < 0) or (used_point.x >= self.number_of_columns):
+            if (block.x < 0) or (block.x >= self.number_of_columns):
                 return True
             # Vertical border collision
-            if (used_point.y < 0) or (used_point.y >= self.number_of_rows):
+            if (block.y < 0) or (block.y >= self.number_of_rows):
                 return True
             # Field contains already a block
-            if self.field[used_point.y][used_point.x] is not None:
+            if self.field[block.y][block.x] is not None:
                 return True
 
         return False
@@ -63,7 +63,7 @@ class Tetris:
             return
 
         if direction == Direction.DOWN:
-            for used_point in self.moving_figure.get_used_points():
+            for used_point in self.moving_figure.get_blocks():
                 self.field[used_point.y][used_point.x] = self.moving_figure.block_color
 
             self.spawn_figure(Position(int(self.number_of_columns / 2), 1))

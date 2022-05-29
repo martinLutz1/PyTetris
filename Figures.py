@@ -48,13 +48,13 @@ class Figure:
             case Direction.DOWN:
                 self.position.y += 1
 
-    def _get_used_points_internal(self, position: Position, figure_description: FigureDescription) -> list[Position]:
-        used_points = [Position(position.x + rel_pos.x, position.y + rel_pos.y)
-                       for rel_pos in figure_description]
-        used_points.append(position)
-        return used_points
+    def _get_blocks_internal(self, position: Position, figure_description: FigureDescription) -> list[Position]:
+        blocks = [Position(position.x + rel_pos.x, position.y + rel_pos.y)
+                  for rel_pos in figure_description]
+        blocks.append(position)
+        return blocks
 
-    def get_next_move_used_points(self, direction: Direction) -> list[Position]:
+    def get_blocks_for_next_move(self, direction: Direction) -> list[Position]:
         new_position_x = self.position.x
         new_position_y = self.position.y
         used_figure_description = self.figure_descriptions[0]
@@ -69,10 +69,10 @@ class Figure:
             case Direction.DOWN:
                 new_position_y += 1
 
-        return self._get_used_points_internal(Position(new_position_x, new_position_y), used_figure_description)
+        return self._get_blocks_internal(Position(new_position_x, new_position_y), used_figure_description)
 
-    def get_used_points(self) -> list[Position]:
-        return self._get_used_points_internal(self.position, self.figure_descriptions[0])
+    def get_blocks(self) -> list[Position]:
+        return self._get_blocks_internal(self.position, self.figure_descriptions[0])
 
 
 class FigureBuilder:

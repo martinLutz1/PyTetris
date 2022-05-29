@@ -135,18 +135,18 @@ class TetrisPainter:
 
     def _clear_last_figure(self):
         if self.last_drawn_figure != None:
-            for point in self.last_drawn_figure.get_used_points():
-                point_rect = pygame.Rect(self._get_screen_position_x(point.x),
-                                         self._get_screen_position_y(point.y),
+            for block in self.last_drawn_figure.get_blocks():
+                block_rect = pygame.Rect(self._get_screen_position_x(block.x),
+                                         self._get_screen_position_y(block.y),
                                          self.block_description.width,
                                          self.block_description.height)
                 pygame.draw.rect(
-                    self.screen, self.background_color, point_rect)
-                pygame.display.update(point_rect)
+                    self.screen, self.background_color, block_rect)
+                pygame.display.update(block_rect)
 
     def _draw_figure(self, figure: Figure):
-        for point in figure.get_used_points():
-            self._draw_block(point, figure.block_color)
+        for block in figure.get_blocks():
+            self._draw_block(block, figure.block_color)
 
     def draw_figure(self, figure: Figure, is_new_figure: bool):
         if figure is self.last_drawn_figure:
