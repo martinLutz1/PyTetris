@@ -12,7 +12,7 @@ fps = 60
 fpsClock = pygame.time.Clock()
 running = True
 key_press_handler = KeyPressHandler()
-ms_until_long_press = 150
+ms_until_long_press = 200
 ms_elapsed_since_last_key_down = 0
 tetris = Tetris(20, 10)
 tetris_painter = TetrisPainter(tetris.number_of_rows, tetris.number_of_columns)
@@ -21,6 +21,7 @@ tetris_painter = TetrisPainter(tetris.number_of_rows, tetris.number_of_columns)
 def draw_on_update():
     if tetris.has_spawned_figure():
         if tetris.check_rows():
+            tetris_painter.score.update(tetris.player.score)
             tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
         else:
             tetris_painter.draw_figure(
@@ -61,8 +62,6 @@ while running:
 
     if tetris.is_game_over():
         tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
-
-    tetris_painter.draw_score(tetris.player.score)
 
     tetris_painter.update()
     fpsClock.tick(fps)
