@@ -16,12 +16,15 @@ class StatusInfo:
 
 
 class Tetris:
+    start_update_interval_ms: int = 500
+    min_update_interval_ms: int = 250
+    min_move_interval_ms: int = 50
+
     number_of_rows: int
     number_of_columns: int
+    update_interval_ms: int
     field: numpy.ndarray
     moving_figure: Figure
-    update_interval_ms: int = 500
-    min_move_interval_ms: int = 50
     status_info = StatusInfo()
     player = Player()
 
@@ -54,6 +57,7 @@ class Tetris:
             (self.number_of_rows, self.number_of_columns), None)
         self.spawn_figure(Position(int(self.number_of_columns / 2), 1))
         self.status_info.is_game_over = True
+        self.update_interval_ms = self.start_update_interval_ms
         self.player.reset()
 
     def _move_internal(self, direction: Direction):
@@ -90,16 +94,25 @@ class Tetris:
             if not (None in self.field[y]):
                 rows_to_delete.append(y)
 
+        if len(rows_to_delete) == 0:
+            return False
+
         self.field = numpy.delete(self.field, rows_to_delete, axis=0)
         self.field = numpy.insert(self.field, numpy.zeros(
             len(rows_to_delete), dtype=int), None, axis=0)
 
-        if len(rows_to_delete) > 0:
-            scoring_points = 10 * len(rows_to_delete) * len(rows_to_delete)
-            self.player.add_to_score(scoring_points)
-            return True
-        else:
-            return False
+        scoring_points = 100 * len(rows_to_delete) * len(rows_to_delete)
+        self.player.add_to_score(scoring_points)
+
+        def update_game_speed():
+            self.update_interval_ms = self.start_update_interval_ms - \
+                int(self.player.score / 20)
+            self.update_interval_ms = max(
+                self.min_update_interval_ms, self.update_interval_ms)
+            self.update_interval_ms = min(
+                self.start_update_interval_ms, self.update_interval_ms)
+        update_game_speed()
+        return True
 
     def update(self):
         ms_elapsed_now = time.time() * 1000
