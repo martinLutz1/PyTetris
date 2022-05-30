@@ -177,3 +177,8 @@ class TetrisPainter:
 
         self.score.draw()
         pygame.display.update()
+
+    def color_rows(self, rows: List[int], block_color: BlockColor):
+        for y in rows:
+            for x in range(self.number_of_columns):
+                self._draw_block(Position(x, y), block_color)

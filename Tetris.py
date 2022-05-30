@@ -66,6 +66,7 @@ class Tetris:
             self.status_info.has_moved = True
             return
 
+        # Collision
         if direction == Direction.DOWN:
             for block in self.moving_figure.get_blocks():
                 self.field[block.y][block.x] = self.moving_figure.block_color
@@ -87,32 +88,31 @@ class Tetris:
         self._move_internal(direction)
         self.status_info.ms_elapsed_since_last_move = ms_elapsed_now
 
-    # Returns true if row is scored.
-    def check_rows(self) -> bool:
-        rows_to_delete = []
+    # Returns list of scored rows.
+    def check_rows(self) -> List[int]:
+        scored_rows = []
         for y in range(self.number_of_rows):
             if not (None in self.field[y]):
-                rows_to_delete.append(y)
+                scored_rows.append(y)
 
-        if len(rows_to_delete) == 0:
-            return False
+        if len(scored_rows) > 0:
+            self.field = numpy.delete(self.field, scored_rows, axis=0)
+            self.field = numpy.insert(self.field, numpy.zeros(
+                len(scored_rows), dtype=int), None, axis=0)
 
-        self.field = numpy.delete(self.field, rows_to_delete, axis=0)
-        self.field = numpy.insert(self.field, numpy.zeros(
-            len(rows_to_delete), dtype=int), None, axis=0)
+            scoring_points = 100 * len(scored_rows) * len(scored_rows)
+            self.player.add_to_score(scoring_points)
 
-        scoring_points = 100 * len(rows_to_delete) * len(rows_to_delete)
-        self.player.add_to_score(scoring_points)
+            def update_game_speed():
+                self.update_interval_ms = self.start_update_interval_ms - \
+                    int(self.player.score / 20)
+                self.update_interval_ms = max(
+                    self.min_update_interval_ms, self.update_interval_ms)
+                self.update_interval_ms = min(
+                    self.start_update_interval_ms, self.update_interval_ms)
+            update_game_speed()
 
-        def update_game_speed():
-            self.update_interval_ms = self.start_update_interval_ms - \
-                int(self.player.score / 20)
-            self.update_interval_ms = max(
-                self.min_update_interval_ms, self.update_interval_ms)
-            self.update_interval_ms = min(
-                self.start_update_interval_ms, self.update_interval_ms)
-        update_game_speed()
-        return True
+        return scored_rows
 
     def update(self):
         ms_elapsed_now = time.time() * 1000
