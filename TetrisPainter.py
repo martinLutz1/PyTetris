@@ -33,22 +33,26 @@ class ViewDescription:
 
 
 class Score:
-    color: pygame.Color = (30, 30, 30)
-    max_screen_distance: int = 50
+    color: pygame.Color = (40, 40, 40)
+    max_screen_distance: int = 10
 
     font: pygame.font.Font
     text_wall: TextWall
 
     def __init__(self, screen: pygame.Surface, screen_width: int, screen_height: int):
-        self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 40)
+        self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 50)
 
         def get_score_position():
-            y_score_position_candidate = int(screen_height * 0.1)
+            y_score_position_candidate = int(screen_height * 0.05)
             y_score_position = self.max_screen_distance if (
                 y_score_position_candidate > Score.max_screen_distance) else y_score_position_candidate
-            score_text_width, _ = self.font.size(self._get_score_text(0))
 
-            return Position(screen_width - score_text_width, y_score_position)
+            x_score_position_candidate = int(screen_width * 0.95)
+            x_score_position = screen_width - self.max_screen_distance if (
+                (screen_width - x_score_position_candidate) > Score.max_screen_distance) else x_score_position_candidate
+            score_width, score_height = self.font.size(self._get_score_text(0))
+
+            return Position(x_score_position - score_width, y_score_position + score_height)
 
         self.text_wall = TextWall(
             self.font, self.color, get_score_position(), screen)
@@ -63,14 +67,49 @@ class Score:
         self.text_wall.draw()
 
 
-class TetrisPainter:
-    fullscreen_border_thickness: int = 20
-    background_color: pygame.Color = (255, 255, 255)
+class Background:
+    color: pygame.Color = (255, 255, 255)
+    unused_area_color:  pygame.Color = (150, 150, 150)
+    border_color: pygame.Color = (40, 40, 40)
+    border_thickness: int = 20
 
+    view_description: ViewDescription
+
+    def __init__(self, view_description: ViewDescription):
+        self.view_description = view_description
+
+    def draw(self, surface: pygame.Surface):
+        surface.fill(self.color)
+
+        def draw_border(x_position: int):
+            border_rect = pygame.Rect(
+                x_position, 0, self.border_thickness, self.view_description.screen_height)
+            pygame.draw.rect(surface, self.border_color, border_rect)
+
+        def draw_unused_area(x_position: int):
+            rect_width = self.view_description.x_screen_offset - self.border_thickness
+            border_rect = pygame.Rect(
+                x_position, 0, rect_width, self.view_description.screen_height)
+            pygame.draw.rect(surface, self.unused_area_color, border_rect)
+
+        # Left area
+        draw_border(self.view_description.x_screen_offset -
+                    self.border_thickness)
+        draw_unused_area(0)
+
+        # Right area
+        draw_border(self.view_description.screen_width -
+                    self.view_description.x_screen_offset)
+        draw_unused_area(self.view_description.screen_width -
+                         self.view_description.x_screen_offset + self.border_thickness)
+
+
+class TetrisPainter:
     screen: pygame.Surface
-    score: Score
     view_description: ViewDescription
     block_description: BlockDescription
+    score: Score
+    background: Background
     last_drawn_figure: Optional[Figure] = None
     number_of_rows: int
     number_of_columns: int
@@ -81,7 +120,6 @@ class TetrisPainter:
         screen_height = pygame.display.Info().current_h
         self.screen = pygame.display.set_mode(
             (screen_width, screen_height), pygame.FULLSCREEN)
-        self.score = Score(self.screen, screen_width, screen_height)
 
         tetris_area_width = screen_height / 2
         x_screen_offset = (screen_width - tetris_area_width) / 2
@@ -95,31 +133,14 @@ class TetrisPainter:
         self.block_description = BlockDescription(
             block_width, block_height, block_border_thickness)
 
+        self.score = Score(self.screen, screen_width, screen_height)
+        self.background = Background(self.view_description)
         self.number_of_rows = number_of_rows
         self.number_of_columns = number_of_columns
         self.number_of_offscreen_rows = number_of_offscreen_rows
 
-        self._draw_background()
+        self.background.draw(self.screen)
         self.score.update(0)
-
-    def _draw_background(self):
-        self.screen.fill(self.background_color)
-        border_color = pygame.Color(100, 100, 100)
-
-        # Left border
-        x_left = self.view_description.x_screen_offset - self.fullscreen_border_thickness
-        pygame.draw.rect(
-            self.screen,
-            border_color,
-            pygame.Rect(x_left, 0, self.fullscreen_border_thickness, self.view_description.screen_height))
-
-        # Right border
-        x_right = self.view_description.screen_width - \
-            self.view_description.x_screen_offset
-        pygame.draw.rect(
-            self.screen,
-            border_color,
-            pygame.Rect(x_right, 0, self.fullscreen_border_thickness, self.view_description.screen_height))
 
     def _get_screen_position_x(self, xPosition):
         return xPosition * (self.view_description.tetris_width / self.number_of_columns) + self.view_description.x_screen_offset
@@ -151,7 +172,8 @@ class TetrisPainter:
                                      self._get_screen_position_y(block.y),
                                      self.block_description.width,
                                      self.block_description.height)
-            pygame.draw.rect(self.screen, self.background_color, block_rect)
+            pygame.draw.rect(
+                self.screen, self.background.color, block_rect)
             updated_rects.append(block_rect)
         return updated_rects
 
@@ -178,7 +200,7 @@ class TetrisPainter:
         self.last_drawn_figure = deepcopy(figure)
 
     def redraw_all(self, field: numpy.ndarray, figure: Figure):
-        self._draw_background()
+        self.background.draw(self.screen)
         self._draw_figure(figure)
         self.last_drawn_figure = deepcopy(figure)
 

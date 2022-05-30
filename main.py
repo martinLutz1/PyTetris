@@ -19,15 +19,14 @@ number_of_offscreen_rows = 2
 tetris = Tetris(20 + number_of_offscreen_rows, 10)
 tetris_painter = TetrisPainter(
     tetris.number_of_rows, tetris.number_of_columns, number_of_offscreen_rows)
-score_block_color = BlockColor(
-    pygame.Color(237, 188, 21), pygame.Color(97, 77, 3))
 
 
 def draw_on_update():
     if tetris.has_spawned_figure():
         scored_rows = tetris.check_rows()
         if len(scored_rows) > 0:
-            tetris_painter.color_rows(scored_rows, score_block_color)
+            tetris_painter.color_rows(
+                scored_rows, tetris_painter.last_drawn_figure.block_color)
             fpsClock.tick(3)
             tetris_painter.score.update(tetris.player.score)
             tetris_painter.redraw_all(tetris.field, tetris.moving_figure)
