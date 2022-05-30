@@ -79,7 +79,8 @@ class TetrisPainter:
     def __init__(self, number_of_rows: int, number_of_columns: int, number_of_offscreen_rows: int):
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
-        self.screen = pygame.display.set_mode([screen_width, screen_height])
+        self.screen = pygame.display.set_mode(
+            (screen_width, screen_height), pygame.FULLSCREEN)
         self.score = Score(self.screen, screen_width, screen_height)
 
         tetris_area_width = screen_height / 2
@@ -126,7 +127,7 @@ class TetrisPainter:
     def _get_screen_position_y(self, yPosition):
         return (yPosition - self.number_of_offscreen_rows) * (self.view_description.screen_height / (self.number_of_rows - self.number_of_offscreen_rows))
 
-    def _draw_block(self, position: Position, block_color: BlockColor):
+    def _draw_block(self, position: Position, block_color: BlockColor) -> pygame.Rect:
         if position.y < self.number_of_offscreen_rows - 1:
             return
 
@@ -136,33 +137,44 @@ class TetrisPainter:
                                  self.block_description.height)
         draw_bordered_rounded_rect(self.screen, deepcopy(block_rect), block_color.body_color,
                                    block_color.border_color, 10, self.block_description.border_thickness)
-        pygame.display.update(block_rect)
+        return block_rect
 
-    def _clear_last_figure(self):
+    def _clear_last_figure(self) -> List[pygame.Rect]:
         if self.last_drawn_figure.position.y < self.number_of_offscreen_rows - 1:
-            return
+            return []
+        if self.last_drawn_figure == None:
+            return []
 
-        if self.last_drawn_figure != None:
-            for block in self.last_drawn_figure.get_blocks():
-                block_rect = pygame.Rect(self._get_screen_position_x(block.x),
-                                         self._get_screen_position_y(block.y),
-                                         self.block_description.width,
-                                         self.block_description.height)
-                pygame.draw.rect(
-                    self.screen, self.background_color, block_rect)
-                pygame.display.update(block_rect)
+        updated_rects = []
+        for block in self.last_drawn_figure.get_blocks():
+            block_rect = pygame.Rect(self._get_screen_position_x(block.x),
+                                     self._get_screen_position_y(block.y),
+                                     self.block_description.width,
+                                     self.block_description.height)
+            pygame.draw.rect(self.screen, self.background_color, block_rect)
+            updated_rects.append(block_rect)
+        return updated_rects
 
     def _draw_figure(self, figure: Figure):
+        updated_rects = []
         for block in figure.get_blocks():
-            self._draw_block(block, figure.block_color)
+            drawn_rect = self._draw_block(block, figure.block_color)
+            updated_rects.append(drawn_rect)
+        return updated_rects
 
     def draw_figure(self, figure: Figure, is_new_figure: bool):
         if figure is self.last_drawn_figure:
             return
 
+        updated_rects = []
         if not is_new_figure:
-            self._clear_last_figure()
-        self._draw_figure(figure)
+            cleared_rects = self._clear_last_figure()
+            updated_rects.extend(cleared_rects)
+
+        drawn_rects = self._draw_figure(figure)
+        updated_rects.extend(drawn_rects)
+
+        pygame.display.update(updated_rects)
         self.last_drawn_figure = deepcopy(figure)
 
     def redraw_all(self, field: numpy.ndarray, figure: Figure):
@@ -179,6 +191,9 @@ class TetrisPainter:
         pygame.display.update()
 
     def color_rows(self, rows: List[int], block_color: BlockColor):
+        updated_rects = []
         for y in rows:
             for x in range(self.number_of_columns):
-                self._draw_block(Position(x, y), block_color)
+                drawn_rect = self._draw_block(Position(x, y), block_color)
+                updated_rects.append(drawn_rect)
+        pygame.display.update(updated_rects)
