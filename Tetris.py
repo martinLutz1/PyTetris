@@ -18,7 +18,7 @@ class StatusInfo:
 class Tetris:
     start_update_interval_ms: int = 500
     min_update_interval_ms: int = 250
-    min_move_interval_ms: int = 50
+    min_move_interval_ms: int = 35
 
     number_of_rows: int
     number_of_columns: int
