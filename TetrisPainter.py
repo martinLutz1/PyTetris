@@ -32,6 +32,17 @@ class ViewDescription:
         self.x_screen_offset = x_screen_offset
 
 
+class TetrisDescription:
+    number_of_rows: int
+    number_of_columns: int
+    number_of_offscreen_rows: int
+
+    def __init__(self, number_of_rows: int, number_of_columns: int, number_of_offscreen_rows: int):
+        self.number_of_rows = number_of_rows
+        self.number_of_columns = number_of_columns
+        self.number_of_offscreen_rows = number_of_offscreen_rows
+
+
 class Score:
     color: pygame.Color = (40, 40, 40)
     max_screen_distance: int = 10
@@ -68,52 +79,55 @@ class Score:
 
 
 class Background:
-    color: pygame.Color = (255, 255, 255)
+    color: pygame.Color = (50, 50, 50)
     unused_area_color:  pygame.Color = (150, 150, 150)
     border_color: pygame.Color = (40, 40, 40)
     border_thickness: int = 20
 
     view_description: ViewDescription
+    tetris_description: TetrisDescription
+    block_description: BlockDescription
 
-    def __init__(self, view_description: ViewDescription):
+    def __init__(self, view_description: ViewDescription, tetris_description: TetrisDescription,
+                 block_description: BlockDescription):
         self.view_description = view_description
+        self.tetris_description = tetris_description
+        self.block_description = block_description
+
+    def _draw_border(self, surface: pygame.Surface, x_position: int):
+        border_rect = pygame.Rect(
+            x_position, 0, self.border_thickness, self.view_description.screen_height)
+        pygame.draw.rect(surface, self.border_color, border_rect)
+
+    def _draw_unused_area(self, surface: pygame.Surface, x_position: int):
+        rect_width = self.view_description.x_screen_offset - self.border_thickness
+        border_rect = pygame.Rect(
+            x_position, 0, rect_width, self.view_description.screen_height)
+        pygame.draw.rect(surface, self.unused_area_color, border_rect)
 
     def draw(self, surface: pygame.Surface):
         surface.fill(self.color)
 
-        def draw_border(x_position: int):
-            border_rect = pygame.Rect(
-                x_position, 0, self.border_thickness, self.view_description.screen_height)
-            pygame.draw.rect(surface, self.border_color, border_rect)
-
-        def draw_unused_area(x_position: int):
-            rect_width = self.view_description.x_screen_offset - self.border_thickness
-            border_rect = pygame.Rect(
-                x_position, 0, rect_width, self.view_description.screen_height)
-            pygame.draw.rect(surface, self.unused_area_color, border_rect)
-
         # Left area
-        draw_border(self.view_description.x_screen_offset -
-                    self.border_thickness)
-        draw_unused_area(0)
+        self._draw_border(
+            surface, self.view_description.x_screen_offset - self.border_thickness)
+        self._draw_unused_area(surface, 0)
 
         # Right area
-        draw_border(self.view_description.screen_width -
-                    self.view_description.x_screen_offset)
-        draw_unused_area(self.view_description.screen_width -
-                         self.view_description.x_screen_offset + self.border_thickness)
+        self._draw_border(surface, self.view_description.screen_width -
+                          self.view_description.x_screen_offset)
+        self._draw_unused_area(surface, self.view_description.screen_width -
+                               self.view_description.x_screen_offset + self.border_thickness)
 
 
 class TetrisPainter:
     screen: pygame.Surface
     view_description: ViewDescription
     block_description: BlockDescription
+    tetris_description: TetrisDescription
     score: Score
     background: Background
     last_drawn_figure: Optional[Figure] = None
-    number_of_rows: int
-    number_of_columns: int
-    number_of_offscreen_rows: int
 
     def __init__(self, number_of_rows: int, number_of_columns: int, number_of_offscreen_rows: int):
         screen_width = pygame.display.Info().current_w
@@ -133,23 +147,24 @@ class TetrisPainter:
         self.block_description = BlockDescription(
             block_width, block_height, block_border_thickness)
 
+        self.tetris_description = TetrisDescription(
+            number_of_rows, number_of_columns, number_of_offscreen_rows)
+
         self.score = Score(self.screen, screen_width, screen_height)
-        self.background = Background(self.view_description)
-        self.number_of_rows = number_of_rows
-        self.number_of_columns = number_of_columns
-        self.number_of_offscreen_rows = number_of_offscreen_rows
+        self.background = Background(
+            self.view_description, self.tetris_description, self.block_description)
 
         self.background.draw(self.screen)
         self.score.update(0)
 
-    def _get_screen_position_x(self, xPosition):
-        return xPosition * (self.view_description.tetris_width / self.number_of_columns) + self.view_description.x_screen_offset
+    def _get_screen_position_x(self, x_position):
+        return x_position * self.block_description.width + self.view_description.x_screen_offset
 
-    def _get_screen_position_y(self, yPosition):
-        return (yPosition - self.number_of_offscreen_rows) * (self.view_description.screen_height / (self.number_of_rows - self.number_of_offscreen_rows))
+    def _get_screen_position_y(self, y_position):
+        return (y_position - self.tetris_description.number_of_offscreen_rows) * self.block_description.height
 
     def _draw_block(self, position: Position, block_color: BlockColor) -> pygame.Rect:
-        if position.y < self.number_of_offscreen_rows - 1:
+        if position.y < self.tetris_description.number_of_offscreen_rows - 1:
             return
 
         block_rect = pygame.Rect(self._get_screen_position_x(position.x),
@@ -161,7 +176,7 @@ class TetrisPainter:
         return block_rect
 
     def _clear_last_figure(self) -> List[pygame.Rect]:
-        if self.last_drawn_figure.position.y < self.number_of_offscreen_rows - 1:
+        if self.last_drawn_figure.position.y < self.tetris_description.number_of_offscreen_rows - 1:
             return []
         if self.last_drawn_figure == None:
             return []
@@ -215,7 +230,7 @@ class TetrisPainter:
     def color_rows(self, rows: List[int], block_color: BlockColor):
         updated_rects = []
         for y in rows:
-            for x in range(self.number_of_columns):
+            for x in range(self.tetris_description.number_of_columns):
                 drawn_rect = self._draw_block(Position(x, y), block_color)
                 updated_rects.append(drawn_rect)
         pygame.display.update(updated_rects)

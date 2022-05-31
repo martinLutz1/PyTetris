@@ -67,7 +67,7 @@ class Tetris:
             return
 
         # Collision
-        if direction == Direction.DOWN:
+        if direction == Direction.down:
             for block in self.moving_figure.get_blocks():
                 self.field[block.y][block.x] = self.moving_figure.block_color
 
@@ -117,7 +117,7 @@ class Tetris:
     def update(self):
         ms_elapsed_now = time.time() * 1000
         if (ms_elapsed_now - self.status_info.ms_elapsed_since_last_step) > self.update_interval_ms:
-            self._move_internal(Direction.DOWN)
+            self._move_internal(Direction.down)
             self.status_info.ms_elapsed_since_last_step = ms_elapsed_now
 
     def has_spawned_figure(self):

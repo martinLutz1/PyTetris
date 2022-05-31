@@ -41,7 +41,7 @@ while running:
     if key_press_handler.is_quit_pressed:
         running = False
 
-    for direction in [Direction.RIGHT, Direction.LEFT, Direction.DOWN, Direction.UP]:
+    for direction in [Direction.right, Direction.left, Direction.down, Direction.up]:
         if key_press_handler.is_direction_key_pressed[direction.value]:
             ms_elapsed_now = time.time() * 1000
             # First registered key press

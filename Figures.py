@@ -1,8 +1,8 @@
 from typing import List
 from enum import Enum
-
 from pygame import Color
-from Common import Direction
+
+from Common import *
 
 
 class Position:
@@ -38,14 +38,14 @@ class Figure:
 
     def move(self, direction: Direction):
         match direction:
-            case Direction.UP:
+            case Direction.up:
                 old_figure_description = self.figure_descriptions.pop(0)
                 self.figure_descriptions.append(old_figure_description)
-            case Direction.RIGHT:
+            case Direction.right:
                 self.position.x += 1
-            case Direction.LEFT:
+            case Direction.left:
                 self.position.x -= 1
-            case Direction.DOWN:
+            case Direction.down:
                 self.position.y += 1
 
     def _get_blocks_internal(self, position: Position, figure_description: FigureDescription) -> list[Position]:
@@ -59,14 +59,14 @@ class Figure:
         new_position_y = self.position.y
         used_figure_description = self.figure_descriptions[0]
         match direction:
-            case Direction.UP:
+            case Direction.up:
                 if len(self.figure_descriptions) > 1:
                     used_figure_description = self.figure_descriptions[1]
-            case Direction.RIGHT:
+            case Direction.right:
                 new_position_x += 1
-            case Direction.LEFT:
+            case Direction.left:
                 new_position_x -= 1
-            case Direction.DOWN:
+            case Direction.down:
                 new_position_y += 1
 
         return self._get_blocks_internal(Position(new_position_x, new_position_y), used_figure_description)
@@ -92,14 +92,12 @@ class FigureBuilder:
                     Position(-2, 0), Position(-1, 0), Position(1, 0)]
                 vertical_description = [
                     Position(0, -1), Position(0, 1), Position(0, 2)]
-                block_color = BlockColor(
-                    Color(0, 240, 240), Color(0, 50, 50))
+                block_color = BlockColor(Color_cyan, Color_cyan_dark)
                 return Figure(position, [horizontal_description, vertical_description], block_color)
 
             case FigureBuilder.FigureType.O:
                 description = [Position(1, 0), Position(1, 1), Position(0, 1)]
-                block_description = BlockColor(
-                    Color(255, 255, 0), Color(50, 50, 0))
+                block_description = BlockColor(Color_yellow, Color_yellow_dark)
                 return Figure(position, [description], block_description)
 
             case FigureBuilder.FigureType.T:
@@ -111,8 +109,7 @@ class FigureBuilder:
                     Position(-1, 0), Position(1, 0), Position(0, 1)]
                 left_description = [
                     Position(0, -1), Position(0, 1), Position(-1, 0)]
-                block_color = BlockColor(
-                    Color(160, 0, 240), Color(40, 0, 50))
+                block_color = BlockColor(Color_purple, Color_purple_dark)
                 return Figure(position, [up_description, right_description, down_description, left_description], block_color)
 
             case FigureBuilder.FigureType.L:
@@ -124,8 +121,7 @@ class FigureBuilder:
                     Position(-1, 0), Position(0, 1), Position(0, 2)]
                 left_description = [
                     Position(-1, 0), Position(-1, 1), Position(1, 0)]
-                block_color = BlockColor(
-                    Color(240, 160, 0), Color(60, 40, 0))
+                block_color = BlockColor(Color_orange, Color_orange_dark)
                 return Figure(position, [up_description, right_description, down_description, left_description], block_color)
 
             case FigureBuilder.FigureType.J:
@@ -137,8 +133,7 @@ class FigureBuilder:
                     Position(1, 0), Position(0, 1), Position(0, 2)]
                 left_description = [
                     Position(-1, 0), Position(-1, -1), Position(1, 0)]
-                block_color = BlockColor(
-                    Color(0, 0, 240), Color(0, 0, 50))
+                block_color = BlockColor(Color_blue, Color_blue_dark)
                 return Figure(position, [up_description, right_description, down_description, left_description], block_color)
 
             case FigureBuilder.FigureType.Z:
@@ -146,8 +141,7 @@ class FigureBuilder:
                     Position(-1, 0), Position(0, 1), Position(1, 1)]
                 vertical_description = [
                     Position(0, 1), Position(1, 0), Position(1, -1)]
-                block_color = BlockColor(
-                    Color(240, 0, 0), Color(50, 0, 0))
+                block_color = BlockColor(Color_red, Color_red_dark)
                 return Figure(position, [horizontal_description, vertical_description], block_color)
 
             case FigureBuilder.FigureType.S:
@@ -155,6 +149,5 @@ class FigureBuilder:
                     Position(0, 1), Position(-1, 1), Position(1, 0)]
                 vertical_description = [
                     Position(0, -1), Position(1, 0), Position(1, 1)]
-                block_color = BlockColor(
-                    Color(0, 240, 0), Color(0, 50, 0))
+                block_color = BlockColor(Color_green, Color_green_dark)
                 return Figure(position, [horizontal_description, vertical_description], block_color)

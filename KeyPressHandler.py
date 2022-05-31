@@ -8,13 +8,13 @@ class KeyPressHandler:
 
     def _to_index(self, key_constant: int):
         if (key_constant == pygame.K_RIGHT) or (key_constant == pygame.K_d):
-            return Direction.RIGHT.value
+            return Direction.right.value
         elif (key_constant == pygame.K_LEFT) or (key_constant == pygame.K_a):
-            return Direction.LEFT.value
+            return Direction.left.value
         elif (key_constant == pygame.K_DOWN) or (key_constant == pygame.K_s):
-            return Direction.DOWN.value
+            return Direction.down.value
         elif (key_constant == pygame.K_UP) or (key_constant == pygame.K_w):
-            return Direction.UP.value
+            return Direction.up.value
         else:
             return -1
 
