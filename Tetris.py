@@ -66,14 +66,14 @@ class Tetris:
             self.status_info.has_moved = True
             return
 
-        # Collision
+        # Collision on down movement -> Spawn a new figure
         if direction == Direction.down:
             for block in self.moving_figure.get_blocks():
                 self.field[block.y][block.x] = self.moving_figure.block_color
 
             self.spawn_figure(Position(int(self.number_of_columns / 2), 1))
 
-            # New spawned figure collides on spawn -> gameover
+            # New spawned figure collides on spawn -> Gameover
             if self._move_collides(self.moving_figure, direction):
                 self._start_new_game()
 
