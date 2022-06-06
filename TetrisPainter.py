@@ -1,9 +1,10 @@
 from copy import deepcopy
+from turtle import pos
 import numpy
 import pygame
 from typing import List, Optional
 
-from Figures import BlockColor, Figure, Position
+from Figures import BlockColor, Figure, BlockPosition
 from DrawSupport import *
 from TextWall import TextWall
 
@@ -63,7 +64,7 @@ class Score:
                 (screen_width - x_score_position_candidate) > Score.max_screen_distance) else x_score_position_candidate
             score_width, score_height = self.font.size(self._get_score_text(0))
 
-            return Position(x_score_position - score_width, y_score_position + score_height)
+            return BlockPosition(x_score_position - score_width, y_score_position + score_height)
 
         self.text_wall = TextWall(
             self.font, self.color, get_score_position(), screen)
@@ -133,7 +134,7 @@ class TetrisPainter:
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         self.screen = pygame.display.set_mode(
-            (screen_width, screen_height), pygame.FULLSCREEN)
+            (screen_width, screen_height))  # , pygame.FULLSCREEN)
 
         tetris_area_width = screen_height / 2
         x_screen_offset = (screen_width - tetris_area_width) / 2
@@ -163,14 +164,15 @@ class TetrisPainter:
     def _get_screen_position_y(self, y_position):
         return (y_position - self.tetris_description.number_of_offscreen_rows) * self.block_description.height
 
-    def _draw_block(self, position: Position, block_color: BlockColor) -> pygame.Rect:
+    def _draw_block(self, position: BlockPosition, block_color: BlockColor, x_block_offset: int = 0,  y_block_offset: int = 0) -> pygame.Rect:
         if position.y < self.tetris_description.number_of_offscreen_rows - 1:
             return
 
-        block_rect = pygame.Rect(self._get_screen_position_x(position.x),
-                                 self._get_screen_position_y(position.y),
-                                 self.block_description.width,
-                                 self.block_description.height)
+        block_rect = pygame.Rect(self._get_screen_position_x(position.x) + x_block_offset,
+                                 self._get_screen_position_y(
+            position.y) + y_block_offset,
+            self.block_description.width,
+            self.block_description.height)
         draw_bordered_rounded_rect(self.screen, deepcopy(block_rect), block_color.body_color,
                                    block_color.border_color, 10, self.block_description.border_thickness)
         return block_rect
@@ -181,10 +183,16 @@ class TetrisPainter:
         if self.last_drawn_figure == None:
             return []
 
+        x_block_offset = int(
+            self.last_drawn_figure.offset.x * self.block_description.width)
+        y_block_offset = int(
+            self.last_drawn_figure.offset.y * self.block_description.height)
+
         updated_rects = []
         for block in self.last_drawn_figure.get_blocks():
-            block_rect = pygame.Rect(self._get_screen_position_x(block.x),
-                                     self._get_screen_position_y(block.y),
+            block_rect = pygame.Rect(self._get_screen_position_x(block.x) + x_block_offset,
+                                     self._get_screen_position_y(
+                                         block.y) + y_block_offset,
                                      self.block_description.width,
                                      self.block_description.height)
             pygame.draw.rect(
@@ -194,8 +202,13 @@ class TetrisPainter:
 
     def _draw_figure(self, figure: Figure):
         updated_rects = []
+
+        x_block_offset = int(figure.offset.x * self.block_description.width)
+        y_block_offset = int(figure.offset.y * self.block_description.height)
+
         for block in figure.get_blocks():
-            drawn_rect = self._draw_block(block, figure.block_color)
+            drawn_rect = self._draw_block(
+                block, figure.block_color, x_block_offset, y_block_offset)
             updated_rects.append(drawn_rect)
         return updated_rects
 
@@ -222,7 +235,7 @@ class TetrisPainter:
         for y in range(field.shape[0]):
             for x in range(field.shape[1]):
                 if field[y][x]:
-                    self._draw_block(Position(x, y), field[y, x])
+                    self._draw_block(BlockPosition(x, y), field[y, x])
 
         self.score.draw()
         pygame.display.update()
@@ -231,6 +244,6 @@ class TetrisPainter:
         updated_rects = []
         for y in rows:
             for x in range(self.tetris_description.number_of_columns):
-                drawn_rect = self._draw_block(Position(x, y), block_color)
+                drawn_rect = self._draw_block(BlockPosition(x, y), block_color)
                 updated_rects.append(drawn_rect)
         pygame.display.update(updated_rects)

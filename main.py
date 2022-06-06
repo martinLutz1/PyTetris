@@ -9,7 +9,7 @@ from Common import Direction
 
 pygame.init()
 
-fps = 60
+fps = 120
 fpsClock = pygame.time.Clock()
 key_press_handler = KeyPressHandler()
 running = True

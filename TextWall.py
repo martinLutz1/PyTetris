@@ -3,7 +3,7 @@ import pygame
 from pygame import Surface
 from pygame.locals import *
 
-from Figures import Position
+from Figures import BlockPosition
 
 
 class TextWall():
@@ -11,14 +11,14 @@ class TextWall():
 
     font: pygame.font.Font
     color: pygame.Color
-    position: Position
+    position: BlockPosition
     text_message: str
     screen: pygame.Surface
     text_surface: pygame.Surface
     text_rect: pygame.Rect
 
     def __init__(self, font: pygame.font.Font, color: pygame.Color,
-                 position: Position, surface: pygame.Surface):
+                 position: BlockPosition, surface: pygame.Surface):
         self.font = font
         self.color = color
         self.text_message = ""
