@@ -14,7 +14,7 @@ class StatusInfo:
 
 
 class Tetris:
-    start_update_interval_ms: int = 500
+    start_update_interval_ms: int = 1000
     min_update_interval_ms: int = 250
     min_move_interval_ms: int = 35
     manual_movement_duration_ms: int = 30
@@ -102,7 +102,8 @@ class Tetris:
             return
 
         self._move_internal(direction, self.manual_movement_duration_ms)
-        self.status_info.ms_elapsed_since_last_move = ms_elapsed_now
+        if self.status_info.has_moved:
+            self.status_info.ms_elapsed_since_last_move = ms_elapsed_now
 
     # Returns list of scored rows.
     def check_rows(self) -> List[int]:

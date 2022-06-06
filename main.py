@@ -56,7 +56,9 @@ while running:
                 tetris.move(direction)
             # Long key press
             elif (ms_elapsed_now - ms_elapsed_since_last_key_down) >= ms_until_long_press:
-                tetris.move(direction)
+                # Long key press is kinda annoying for rotating the figure.
+                if direction != Direction.up:
+                    tetris.move(direction)
 
     if not (True in key_press_handler.is_direction_key_pressed):
         ms_elapsed_since_last_key_down = 0
