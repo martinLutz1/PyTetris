@@ -1,5 +1,4 @@
 from copy import deepcopy
-from turtle import pos
 import numpy
 import pygame
 from typing import List, Optional
@@ -134,7 +133,7 @@ class TetrisPainter:
         screen_width = pygame.display.Info().current_w
         screen_height = pygame.display.Info().current_h
         self.screen = pygame.display.set_mode(
-            (screen_width, screen_height))  # , pygame.FULLSCREEN)
+            (screen_width, screen_height), pygame.FULLSCREEN)
 
         tetris_area_width = screen_height / 2
         x_screen_offset = (screen_width - tetris_area_width) / 2

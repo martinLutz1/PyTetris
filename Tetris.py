@@ -1,5 +1,4 @@
 from copy import deepcopy
-from turtle import left
 import numpy
 import random
 from FigureBuilder import FigureBuilder
