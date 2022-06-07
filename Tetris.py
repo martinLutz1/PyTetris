@@ -16,8 +16,8 @@ class StatusInfo:
 class Tetris:
     start_update_interval_ms: int = 1000
     min_update_interval_ms: int = 250
-    min_move_interval_ms: int = 35
-    manual_movement_duration_ms: int = 30
+    min_move_interval_ms: int = 20
+    manual_movement_duration_ms: int = 40
 
     number_of_rows: int
     number_of_columns: int
@@ -44,21 +44,37 @@ class Tetris:
     def _move_collides(self, figure: Figure, direction: Direction) -> bool:
         # On smooth movement (position update on every frame) a block can vertically collide with 2 blocks.
         has_additional_y_position = (figure.offset.y > 0.0)
+        has_additional_right_x_position = (figure.offset.x > 0.0)
+        has_additional_left_x_position = (figure.offset.x < 0.0)
 
         def block_collides(block_position: BlockPosition):
             # Horizontal border collision
-            if (block_position.x < 0) or (block_position.x >= self.number_of_columns):
+            x_block_position = block_position.x
+            if has_additional_right_x_position:
+                x_block_position += 1
+            elif has_additional_left_x_position:
+                x_block_position -= 1
+            if (x_block_position < 0) or (x_block_position >= self.number_of_columns):
                 return True
+
             # Vertical border collision
-            if (block_position.y < 0) or (block_position.y >= self.number_of_rows):
+            y_block_position = block_position.y
+            if has_additional_y_position:
+                y_block_position += 1
+            if (y_block_position < 0) or (y_block_position >= self.number_of_rows):
                 return True
+
             # Field contains already a block
-            if self.field[block_position.y][block_position.x]:
+            if self.field[y_block_position][x_block_position]:
                 return True
-            if has_additional_y_position and self.field[block_position.y - 1][block_position.x]:
+            if has_additional_y_position and self.field[y_block_position - 1][block_position.x]:
                 return True
-            else:
-                return False
+            if has_additional_right_x_position and self.field[y_block_position][block_position.x + 1]:
+                return True
+            if has_additional_left_x_position and self.field[y_block_position][block_position.x - 1]:
+                return True
+
+            return False
 
         for block_position in figure.get_blocks_for_next_move(direction):
             if block_collides(block_position):
@@ -74,14 +90,15 @@ class Tetris:
         self.player.reset()
 
     def _move_internal(self, direction: Direction, duration_ms: int):
-        if not self._move_collides(self.moving_figure, direction):
+        if not self._move_collides(deepcopy(self.moving_figure), direction):
             self.moving_figure.move(direction, duration_ms)
             self.status_info.has_moved = True
             return
 
         # Collision on down movement -> Spawn a new figure
         if direction == Direction.down:
-            self.moving_figure.finalize()
+            self.moving_figure.finalize(
+                self.number_of_columns, self.number_of_rows)
             for block in self.moving_figure.get_blocks():
                 self.field[block.y][block.x] = self.moving_figure.block_color
 
@@ -96,14 +113,7 @@ class Tetris:
             self.status_info.has_moved = True
 
     def move(self, direction: Direction):
-        # Avoid too fast interaction
-        ms_elapsed_now = time.time() * 1000
-        if (ms_elapsed_now - self.status_info.ms_elapsed_since_last_move) < self.min_move_interval_ms:
-            return
-
         self._move_internal(direction, self.manual_movement_duration_ms)
-        if self.status_info.has_moved:
-            self.status_info.ms_elapsed_since_last_move = ms_elapsed_now
 
     # Returns list of scored rows.
     def check_rows(self) -> List[int]:

@@ -29,6 +29,7 @@ def draw_on_update():
     elif tetris.has_spawned_figure():
         scored_rows = tetris.check_rows()
         if len(scored_rows) > 0:
+            tetris_painter.draw_figure(tetris.last_figure, False)
             tetris_painter.color_rows(
                 scored_rows, tetris_painter.last_drawn_figure.block_color)
             fpsClock.tick(3)

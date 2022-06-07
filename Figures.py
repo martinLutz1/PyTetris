@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List
 from enum import Enum
 from pygame import Color
@@ -18,12 +19,9 @@ class BlockPosition:
     x: int
     y: int
 
-    offset: Offset
-
     def __init__(self, x: int, y: int):
         self.x = x
         self.y = y
-        self.offset = Offset(0.0, 0.0)
 
 
 FigureDescription = list[BlockPosition]
@@ -89,24 +87,6 @@ class Figure:
             else:
                 self.offset.x = partial_block_offset_factor
 
-        if self.next_vertical_move:
-            if not self.vertical_movement_converter:
-                self.vertical_movement_converter = DurationToFactorConverter(
-                    self.next_vertical_move.duration_ms)
-                self.next_vertical_move = None
-            elif self.vertical_movement_converter.duration_ms > self.next_vertical_move.duration_ms:
-                self.vertical_movement_converter = DurationToFactorConverter(
-                    self.next_vertical_move.duration_ms, False, self.vertical_movement_converter.get_factor())
-                self.next_vertical_move = None
-
-        if self.next_horizontal_move:
-            if not self.horizontal_movement_converter:
-                is_left_move = (
-                    self.next_horizontal_move.direction == Direction.left)
-                self.horizontal_movement_converter = DurationToFactorConverter(
-                    self.next_horizontal_move.duration_ms, is_left_move)
-                self.next_horizontal_move = None
-
     def moves_down(self):
         return self.vertical_movement_converter is not None
 
@@ -116,14 +96,24 @@ class Figure:
         if direction == Direction.up:
             old_figure_description = self.figure_descriptions.pop(0)
             self.figure_descriptions.append(old_figure_description)
-        # Enqueu move
-        else:
-            if direction == Direction.down:
-                self.next_vertical_move = MovementDescription(
-                    direction, duration_ms)
-            else:
-                self.next_horizontal_move = MovementDescription(
-                    direction, duration_ms)
+
+        # Vertical (down) movement
+        if direction == Direction.down:
+            if not self.vertical_movement_converter:
+                self.vertical_movement_converter = DurationToFactorConverter(
+                    duration_ms)
+            elif self.vertical_movement_converter.duration_ms > duration_ms:
+                self.vertical_movement_converter = DurationToFactorConverter(
+                    duration_ms, False, self.vertical_movement_converter.get_factor())
+
+        # Horizontal movement
+        if not self.horizontal_movement_converter:
+            if direction == Direction.left:
+                self.horizontal_movement_converter = DurationToFactorConverter(
+                    duration_ms, True)
+            elif direction == Direction.right:
+                self.horizontal_movement_converter = DurationToFactorConverter(
+                    duration_ms, False)
 
     def _get_blocks_internal(self, position: BlockPosition, figure_description: FigureDescription) -> list[BlockPosition]:
         blocks = [BlockPosition(position.x + rel_pos.x, position.y + rel_pos.y)
@@ -132,42 +122,36 @@ class Figure:
         return blocks
 
     def get_blocks_for_next_move(self, direction: Direction) -> list[BlockPosition]:
-        x_offset = 1 if self.offset.x > 0 else (-1 if self.offset.x < 0 else 0)
-        new_position_x = self.position.x + x_offset
-
-        y_offset = 1 if self.offset.y > 0 else (-1 if self.offset.y < 0 else 0)
-        new_position_y = self.position.y + y_offset
-
+        next_move_block_position = deepcopy(self.position)
         used_figure_description = self.figure_descriptions[0]
+
         match direction:
             case Direction.up:
                 if len(self.figure_descriptions) > 1:
                     used_figure_description = self.figure_descriptions[1]
             case Direction.right:
-                new_position_x += 1
+                next_move_block_position.x += 1
             case Direction.left:
-                new_position_x -= 1
+                next_move_block_position.x -= 1
             case Direction.down:
-                new_position_y += 1
+                next_move_block_position.y += 1
 
-        return self._get_blocks_internal(BlockPosition(new_position_x, new_position_y), used_figure_description)
+        return self._get_blocks_internal(next_move_block_position, used_figure_description)
 
     def get_blocks(self) -> list[BlockPosition]:
         return self._get_blocks_internal(self.position, self.figure_descriptions[0])
 
     # Stop any ongoing movement and snap to the target position.
-    def finalize(self):
-        self.update_position()
-
+    def finalize(self, x_border: int, y_border: int):
         if self.vertical_movement_converter:
             self.position.y += -1 if self.vertical_movement_converter.is_negative else 1
-            self.offset.y = 0.0
             self.vertical_movement_converter = None
+        self.offset.y = 0.0
 
         if self.horizontal_movement_converter:
             self.position.x += -1 if self.horizontal_movement_converter.is_negative else 1
-            self.offset.x = 0.0
             self.horizontal_movement_converter = None
+        self.offset.x = 0.0
 
 
 class FigureBuilder:
