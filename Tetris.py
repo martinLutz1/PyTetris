@@ -17,7 +17,6 @@ class StatusInfo:
 class Tetris:
     start_update_interval_ms: int = 500
     min_update_interval_ms: int = 250
-    min_move_interval_ms: int = 30
     manual_movement_duration_ms: int = 30
 
     number_of_rows: int
@@ -145,10 +144,9 @@ class Tetris:
 
         return scored_rows
 
-    def update(self):
+    def auto_move_down(self):
         if not self.moving_figure.moves_down():
             self._move_internal(Direction.down, self.update_interval_ms)
-
         self.moving_figure.update_position()
 
     def has_spawned_figure(self):

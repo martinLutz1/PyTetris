@@ -13,7 +13,7 @@ fps = 120
 fpsClock = pygame.time.Clock()
 key_press_handler = KeyPressHandler()
 running = True
-ms_until_long_press = 200
+ms_until_long_press = 150
 ms_elapsed_since_last_key_down = 0
 number_of_offscreen_rows = 2
 tetris = Tetris(20 + number_of_offscreen_rows, 10)
@@ -55,6 +55,7 @@ while running:
             if ms_elapsed_since_last_key_down == 0:
                 ms_elapsed_since_last_key_down = ms_elapsed_now
                 tetris.move(direction)
+
             # Long key press
             elif (ms_elapsed_now - ms_elapsed_since_last_key_down) >= ms_until_long_press:
                 # Long key press is kinda annoying for rotating the figure.
@@ -64,7 +65,8 @@ while running:
     if not (True in key_press_handler.is_direction_key_pressed):
         ms_elapsed_since_last_key_down = 0
 
-    tetris.update()
+    tetris.auto_move_down()
+
     draw_on_update()
 
     fpsClock.tick(fps)
