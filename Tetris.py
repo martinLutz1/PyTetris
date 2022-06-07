@@ -1,7 +1,8 @@
 from copy import deepcopy
+from turtle import left
 import numpy
 import random
-import time
+from FigureBuilder import FigureBuilder
 from Figures import *
 from Player import Player
 
@@ -14,10 +15,10 @@ class StatusInfo:
 
 
 class Tetris:
-    start_update_interval_ms: int = 1000
+    start_update_interval_ms: int = 500
     min_update_interval_ms: int = 250
-    min_move_interval_ms: int = 20
-    manual_movement_duration_ms: int = 40
+    min_move_interval_ms: int = 30
+    manual_movement_duration_ms: int = 30
 
     number_of_rows: int
     number_of_columns: int
@@ -42,43 +43,47 @@ class Tetris:
         self.status_info.has_spawned_figure = True
 
     def _move_collides(self, figure: Figure, direction: Direction) -> bool:
-        # On smooth movement (position update on every frame) a block can vertically collide with 2 blocks.
-        has_additional_y_position = (figure.offset.y > 0.0)
-        has_additional_right_x_position = (figure.offset.x > 0.0)
-        has_additional_left_x_position = (figure.offset.x < 0.0)
+        is_moving_down = figure.moves_down()
+        is_moving_right = figure.moves_right()
+        is_moving_left = figure.moves_left()
 
         def block_collides(block_position: BlockPosition):
-            # Horizontal border collision
-            x_block_position = block_position.x
-            if has_additional_right_x_position:
-                x_block_position += 1
-            elif has_additional_left_x_position:
-                x_block_position -= 1
-            if (x_block_position < 0) or (x_block_position >= self.number_of_columns):
+            block_to_be_checked = [block_position]
+
+            if is_moving_right:
+                block_to_be_checked.append(BlockPosition(
+                    block_position.x + 1, block_position.y))
+
+            if is_moving_left:
+                block_to_be_checked.append(BlockPosition(
+                    block_position.x - 1, block_position.y))
+
+            if is_moving_down:
+                block_to_be_checked.append(BlockPosition(
+                    block_position.x, block_position.y + 1))
+
+            # Border collision
+            if any(position.x >= self.number_of_columns for position in block_to_be_checked):
+                return True
+            if any(position.x < 0 for position in block_to_be_checked):
+                return True
+            if any(position.y >= self.number_of_rows for position in block_to_be_checked):
                 return True
 
-            # Vertical border collision
-            y_block_position = block_position.y
-            if has_additional_y_position:
-                y_block_position += 1
-            if (y_block_position < 0) or (y_block_position >= self.number_of_rows):
+            # Block collision
+            if any(self.field[position.y][position.x] for position in block_to_be_checked):
                 return True
 
-            # Field contains already a block
-            if self.field[y_block_position][x_block_position]:
-                return True
-            if has_additional_y_position and self.field[y_block_position - 1][block_position.x]:
-                return True
-            if has_additional_right_x_position and self.field[y_block_position][block_position.x + 1]:
-                return True
-            if has_additional_left_x_position and self.field[y_block_position][block_position.x - 1]:
-                return True
+            if direction == Direction.down:
+                if self.field[block_position.y - 1][block_position.x]:
+                    return True
 
             return False
 
         for block_position in figure.get_blocks_for_next_move(direction):
             if block_collides(block_position):
                 return True
+
         return False
 
     def _start_new_game(self):
@@ -90,15 +95,14 @@ class Tetris:
         self.player.reset()
 
     def _move_internal(self, direction: Direction, duration_ms: int):
-        if not self._move_collides(deepcopy(self.moving_figure), direction):
+        if not self._move_collides(self.moving_figure, direction):
             self.moving_figure.move(direction, duration_ms)
             self.status_info.has_moved = True
             return
 
         # Collision on down movement -> Spawn a new figure
         if direction == Direction.down:
-            self.moving_figure.finalize(
-                self.number_of_columns, self.number_of_rows)
+            self.moving_figure.finalize()
             for block in self.moving_figure.get_blocks():
                 self.field[block.y][block.x] = self.moving_figure.block_color
 
