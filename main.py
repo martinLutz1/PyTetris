@@ -1,11 +1,10 @@
 
 import pygame
 import time
-from Figures import BlockColor
 from Tetris import Tetris
 from TetrisPainter import TetrisPainter
 from KeyPressHandler import KeyPressHandler
-from Common import Direction
+from Common import Direction, TimeCounter
 
 pygame.init()
 
@@ -13,8 +12,9 @@ fps = 120
 fpsClock = pygame.time.Clock()
 key_press_handler = KeyPressHandler()
 running = True
-ms_until_long_press = 150
-ms_elapsed_since_last_key_down = 0
+long_press_direction_time_counter = TimeCounter(150)
+is_rotation_pressed_before = False
+
 number_of_offscreen_rows = 2
 tetris = Tetris(20 + number_of_offscreen_rows, 10)
 tetris_painter = TetrisPainter(
@@ -48,27 +48,33 @@ while running:
     if key_press_handler.is_quit_pressed:
         running = False
 
-    for direction in [Direction.right, Direction.left, Direction.down, Direction.up]:
+    # Handle rotation
+    if key_press_handler.is_direction_key_pressed[Direction.up.value]:
+        if not is_rotation_pressed_before:
+            tetris.move(Direction.up)
+    is_rotation_pressed_before = key_press_handler.is_direction_key_pressed[
+        Direction.up.value]
+
+    # Handle movement
+    for direction in [Direction.right, Direction.left, Direction.down]:
         if key_press_handler.is_direction_key_pressed[direction.value]:
-            ms_elapsed_now = time.time() * 1000
+
             # First registered key press
-            if ms_elapsed_since_last_key_down == 0:
-                ms_elapsed_since_last_key_down = ms_elapsed_now
+            if not long_press_direction_time_counter.is_started():
+                long_press_direction_time_counter.start()
                 tetris.move(direction)
 
             # Long key press
-            elif (ms_elapsed_now - ms_elapsed_since_last_key_down) >= ms_until_long_press:
+            elif long_press_direction_time_counter.is_elapsed():
                 # Long key press is kinda annoying for rotating the figure.
                 if direction != Direction.up:
                     tetris.move(direction)
 
     if not (True in key_press_handler.is_direction_key_pressed):
-        ms_elapsed_since_last_key_down = 0
+        long_press_direction_time_counter.stop()
 
     tetris.auto_move_down()
-
     draw_on_update()
-
     fpsClock.tick(fps)
 
 pygame.quit()

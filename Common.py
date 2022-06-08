@@ -25,17 +25,43 @@ class Direction(Enum):
     right = 3
 
 
+class TimeCounter:
+    duration_ms: int
+    ms_elapsed_on_start: int
+
+    def __init__(self, duration_ms: int):
+        self.duration_ms = duration_ms
+        self.ms_elapsed_on_start = 0
+
+    def stop(self):
+        self.ms_elapsed_on_start = 0
+
+    def start(self):
+        self.ms_elapsed_on_start = time.time() * 1000
+
+    def is_started(self):
+        return self.ms_elapsed_on_start > 0
+
+    def is_elapsed(self) -> bool:
+        if self.ms_elapsed_on_start == 0:
+            return False
+
+        ms_elapsed_now = time.time() * 1000
+        ms_elapsed_since_start = ms_elapsed_now - self.ms_elapsed_on_start
+        return ms_elapsed_since_start >= self.duration_ms
+
+
 class DurationToFactorConverter:
     ms_elapsed_on_start: int
     duration_ms: int
     is_negative: bool
     factor_offset: float
 
-    def __init__(self, duration_ms: int, is_negative: bool = False, factor_offset: float = 0.0) -> None:
+    def __init__(self, duration_ms: int, is_negative: bool = False, factor_offset: float = 0.0):
         self.duration_ms = duration_ms
-        self.ms_elapsed_on_start = time.time() * 1000
         self.is_negative = is_negative
         self.factor_offset = factor_offset
+        self.reset()
 
     def reset(self):
         self.ms_elapsed_on_start = time.time() * 1000
