@@ -9,24 +9,28 @@ class TextView():
 
     font: pygame.font.Font
     color: pygame.Color
-    position: BlockPosition
     text: str
     surface: pygame.Surface
     rect: pygame.Rect
+    x_position: int
+    y_position: int
 
     def __init__(self, font: pygame.font.Font, color: pygame.Color,
-                 position: BlockPosition):
+                 x_position: int, y_position: int, parent_surface_width: int,
+                 parent_surface_height: int):
         self.font = font
         self.color = color
         self.text = ""
-        self.position = position
+        self.x_position = x_position + 4 * (parent_surface_width / 50)
+        self.y_position = y_position + (parent_surface_width / 50)
 
     def _render(self):
         """no AA = automatic transparent. With AA you need to set the color key too"""
         self.surface = self.font.render(
             self.text, self.use_antialiasing, self.color)
-        self.rect = self.surface.get_rect(
-            center=(self.position.x, self.position.y))
+        self.rect = self.surface.get_rect()
+        self.rect.x = self.x_position
+        self.rect.y = self.y_position
 
     def draw(self, parent_surface: pygame.Surface):
         self._render()
@@ -48,23 +52,11 @@ class ScoreView:
     font: pygame.font.Font
     text_wall: TextView
 
-    def __init__(self, screen_width: int, screen_height: int):
+    def __init__(self, x_position: int, y_position: int,
+                 parent_surface_width: int, parent_surface_height: int):
         self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 50)
-
-        def get_score_position():
-            y_score_position_candidate = int(screen_height * 0.05)
-            y_score_position = self.max_screen_distance if (
-                y_score_position_candidate > ScoreView.max_screen_distance) else y_score_position_candidate
-
-            x_score_position_candidate = int(screen_width * 0.95)
-            x_score_position = screen_width - self.max_screen_distance if (
-                (screen_width - x_score_position_candidate) > ScoreView.max_screen_distance) else x_score_position_candidate
-            score_width, score_height = self.font.size(self._get_score_text(0))
-
-            return BlockPosition(x_score_position - score_width, y_score_position + score_height)
-
         self.text_wall = TextView(
-            self.font, self.color, get_score_position())
+            self.font, self.color, x_position, y_position, parent_surface_width, parent_surface_height)
 
     def _get_score_text(self, score: int):
         return "Score: " + str(score)
