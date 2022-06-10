@@ -33,11 +33,11 @@ class TimeCounter:
         self.duration_ms = duration_ms
         self.ms_elapsed_on_start = 0
 
-    def stop(self):
-        self.ms_elapsed_on_start = 0
-
     def start(self):
         self.ms_elapsed_on_start = time.time() * 1000
+
+    def stop(self):
+        self.ms_elapsed_on_start = 0
 
     def is_started(self):
         return self.ms_elapsed_on_start > 0

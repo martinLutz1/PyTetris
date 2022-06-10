@@ -1,4 +1,3 @@
-from copy import deepcopy
 import numpy
 import random
 from FigureBuilder import FigureBuilder
@@ -7,7 +6,6 @@ from Player import Player
 
 
 class StatusInfo:
-    ms_elapsed_since_last_move: int = 0
     has_moved: bool = False
     has_spawned_figure: bool = False
     is_game_over: bool = False
@@ -15,7 +13,7 @@ class StatusInfo:
 
 class Tetris:
     start_update_interval_ms: int = 500
-    min_update_interval_ms: int = 250
+    min_update_interval_ms: int = 150
     manual_movement_duration_ms: int = 30
 
     number_of_rows: int
