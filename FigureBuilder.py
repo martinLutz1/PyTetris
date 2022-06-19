@@ -25,8 +25,8 @@ class FigureBuilder:
                 return Figure(position, [horizontal_description, vertical_description], block_color, vertical_description)
 
             case FigureBuilder.FigureType.O:
-                description = [BlockPosition(1, 0), BlockPosition(
-                    1, -1), BlockPosition(0, -1)]
+                description = [BlockPosition(-1, 0), BlockPosition(
+                    -1, -1), BlockPosition(0, -1)]
                 block_description = BlockColor(Color_yellow, Color_yellow_dark)
                 return Figure(position, [description], block_description, description)
 
