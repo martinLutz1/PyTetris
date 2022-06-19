@@ -38,6 +38,8 @@ class BlockColor:
 class Figure:
     position: BlockPosition
     relative_positions: list[BlockPosition]
+    figure_descriptions: list[FigureDescription]
+    static_figure_description: FigureDescription
     offset: Offset
     block_color: BlockColor
     ms_elapsed_since_last_step: int
@@ -46,9 +48,11 @@ class Figure:
     vertical_movement_converter: DurationToFactorConverter = None
     last_move: Direction = None
 
-    def __init__(self, position: BlockPosition, figure_descriptions: List[FigureDescription], block_color: BlockColor):
+    def __init__(self, position: BlockPosition, figure_descriptions: List[FigureDescription],
+                 block_color: BlockColor, static_figure_description: FigureDescription):
         self.position = position
         self.figure_descriptions = figure_descriptions
+        self.static_figure_description = static_figure_description
         self.block_color = block_color
         self.offset = Offset(0.0, 0.0)
 
@@ -75,13 +79,13 @@ class Figure:
             else:
                 self.offset.x = partial_block_offset_factor
 
-    def moves_down(self):
+    def is_moving_down(self):
         return self.vertical_movement_converter is not None
 
-    def moves_right(self):
+    def is_moving_right(self):
         return (self.horizontal_movement_converter and not self.horizontal_movement_converter.is_negative)
 
-    def moves_left(self):
+    def is_moving_left(self):
         return (self.horizontal_movement_converter and self.horizontal_movement_converter.is_negative)
 
     # Move the figure to the passed direction. The movement lasts for the passed duration.
@@ -134,6 +138,11 @@ class Figure:
 
     def get_blocks(self) -> list[BlockPosition]:
         return self._get_blocks_internal(self.position, self.figure_descriptions[0])
+
+    def get_static_blocks(self) -> list[BlockPosition]:
+        blocks = [BlockPosition(0, 0)]
+        blocks.extend(self.static_figure_description)
+        return blocks
 
     # Stop any ongoing movement and snap to the target position.
     def finalize(self):

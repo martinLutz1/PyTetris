@@ -1,14 +1,15 @@
+from enum import Enum
 import numpy
-import random
 from FigureBuilder import FigureBuilder
 from Figures import *
 from Player import Player
 
 
-class StatusInfo:
-    has_moved: bool = False
-    has_spawned_figure: bool = False
-    is_game_over: bool = False
+class MoveResult(Enum):
+    Nothing = 1
+    HasMoved = 2
+    HasSpawnedFigure = 3
+    IsGameOver = 4
 
 
 class Tetris:
@@ -20,28 +21,31 @@ class Tetris:
     number_of_columns: int
     update_interval_ms: int
     field: numpy.ndarray
-    moving_figure: Figure = None
-    last_figure: Figure = None
-    status_info = StatusInfo()
-    player = Player()
+    moving_figure: Figure
+    last_figure: Figure
+    next_figure: Figure
+    player: Player
 
     def __init__(self, number_of_rows: int, number_of_columns: int):
         self.number_of_rows = number_of_rows
         self.number_of_columns = number_of_columns
+        self.next_figure = None
+        self.moving_figure = None
+        self.player = Player()
         self._start_new_game()
 
     def spawn_figure(self, position: BlockPosition):
-        if self.moving_figure:
-            self.last_figure = self.moving_figure
+        if not self.next_figure:
+            self.next_figure = FigureBuilder.random(position)
 
-        figure_type = random.choice(list(FigureBuilder.FigureType))
-        self.moving_figure = (FigureBuilder.new(position, figure_type))
-        self.status_info.has_spawned_figure = True
+        self.last_figure = deepcopy(self.moving_figure)
+        self.moving_figure = deepcopy(self.next_figure)
+        self.next_figure = FigureBuilder.random(position)
 
     def _move_collides(self, figure: Figure, direction: Direction) -> bool:
-        is_moving_down = figure.moves_down()
-        is_moving_right = figure.moves_right()
-        is_moving_left = figure.moves_left()
+        is_moving_down = figure.is_moving_down()
+        is_moving_right = figure.is_moving_right()
+        is_moving_left = figure.is_moving_left()
 
         def block_collides(block_position: BlockPosition):
             block_to_be_checked = [block_position]
@@ -86,15 +90,13 @@ class Tetris:
         self.field = numpy.full(
             (self.number_of_rows, self.number_of_columns), None)
         self.spawn_figure(BlockPosition(int(self.number_of_columns / 2), 1))
-        self.status_info.is_game_over = True
         self.update_interval_ms = self.start_update_interval_ms
         self.player.reset()
 
-    def _move_internal(self, direction: Direction, duration_ms: int):
+    def _move_internal(self, direction: Direction, duration_ms: int) -> MoveResult:
         if not self._move_collides(self.moving_figure, direction):
             self.moving_figure.move(direction, duration_ms)
-            self.status_info.has_moved = True
-            return
+            return MoveResult.HasMoved
 
         # Collision on down movement -> Spawn a new figure
         if direction == Direction.down:
@@ -108,12 +110,17 @@ class Tetris:
             # New spawned figure collides on spawn -> Gameover
             if self._move_collides(self.moving_figure, direction):
                 self._start_new_game()
+                return MoveResult.IsGameOver
+            else:
+                return MoveResult.HasSpawnedFigure
+        else:
+            return MoveResult.Nothing
 
-            self.moving_figure.move(direction.down, duration_ms)
-            self.status_info.has_moved = True
-
-    def move(self, direction: Direction):
-        self._move_internal(direction, self.manual_movement_duration_ms)
+    def move(self, direction: Direction) -> MoveResult:
+        movement_result = self._move_internal(
+            direction, self.manual_movement_duration_ms)
+        self.moving_figure.update_position()
+        return movement_result
 
     # Returns list of scored rows.
     def check_rows(self) -> List[int]:
@@ -141,22 +148,21 @@ class Tetris:
 
         return scored_rows
 
-    def auto_move_down(self):
-        if not self.moving_figure.moves_down():
-            self._move_internal(Direction.down, self.update_interval_ms)
+    def auto_move_down(self) -> MoveResult:
+        move_result = MoveResult.Nothing
+
+        if not self.moving_figure.is_moving_down():
+            move_result = self._move_internal(
+                Direction.down, self.update_interval_ms)
         self.moving_figure.update_position()
 
-    def has_spawned_figure(self):
-        has_spawned_figure = self.status_info.has_spawned_figure
-        self.status_info.has_spawned_figure = False
-        return has_spawned_figure
+        return move_result if (move_result is not move_result.Nothing) else MoveResult.HasMoved
 
-    def has_moved(self):
-        has_moved = self.status_info.has_moved
-        self.status_info.has_moved = False
-        return has_moved
+    def get_last_figure(self) -> Figure:
+        return self.last_figure
 
-    def is_game_over(self):
-        is_game_over = self.status_info.is_game_over
-        self.status_info.is_game_over = False
-        return is_game_over
+    def get_moving_figure(self) -> Figure:
+        return self.moving_figure
+
+    def get_next_figure(self) -> Figure:
+        return self.next_figure

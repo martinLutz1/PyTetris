@@ -5,7 +5,7 @@ import pygame
 from Figures import BlockColor, BlockPosition, Figure, Offset
 from View.FigureSprite import FigureSprite
 from View.ViewCommon import BlockDescription
-from View.BlockView import BlockView
+from View.BlockView import TetrisBlockView
 
 
 class TetrisView:
@@ -17,7 +17,7 @@ class TetrisView:
     x_position: int
     y_position: int
     figure_sprite: FigureSprite
-    static_block_views: list[BlockView] = []
+    static_block_views: list[TetrisBlockView] = []
     background_color: pygame.Color = (50, 50, 50)
 
     def __init__(self, width: int, height: int, x_position: int, y_position: int,
@@ -35,12 +35,12 @@ class TetrisView:
         self.y_position = y_position
 
     def _get_block_view(self, color: pygame.Color, position: BlockPosition,
-                        offset: Offset = Offset(0, 0)) -> BlockView:
+                        offset: Offset = Offset(0, 0)) -> TetrisBlockView:
         block_position = BlockPosition(
             position.x, position.y - self.number_of_offscreen_rows)
-        return BlockView(self.block_description, block_position, offset, color)
+        return TetrisBlockView(self.block_description, block_position, offset, color)
 
-    def _get_block_views(self, figure: Figure) -> list[BlockView]:
+    def _get_block_views(self, figure: Figure) -> list[TetrisBlockView]:
         block_views = []
 
         for block in figure.get_blocks():
@@ -50,7 +50,7 @@ class TetrisView:
 
         return block_views
 
-    def _draw_block_views(self, block_views: list[BlockView]) -> list[pygame.Rect]:
+    def _draw_block_views(self, block_views: list[TetrisBlockView]) -> list[pygame.Rect]:
         updated_rects = []
 
         for block_view in block_views:
@@ -63,15 +63,17 @@ class TetrisView:
         return updated_rects
 
     def _to_absolute_position(self, rects: list[pygame.Rect]) -> list[pygame.Rect]:
-        for rect in rects:
+        updated_rects = deepcopy(rects)
+        for rect in updated_rects:
             rect.x += self.x_position
             rect.y += self.y_position
-        return rects
+        return updated_rects
 
     def add_to_static_blocks(self, figure: Figure):
         self.static_block_views.extend(self._get_block_views(figure))
 
     def set_moving_figure(self, figure: Figure):
+        self.figure_sprite = None
         self.figure_sprite = FigureSprite(
             figure, self.block_description, self.number_of_offscreen_rows, self.background_color)
 
@@ -102,7 +104,7 @@ class TetrisView:
     def color_rows(self, rows: list[int], block_color: BlockColor,
                    parent_surface: pygame.surface) -> list[pygame.Rect]:
 
-        def get_block_views_for_row(row: int) -> list[BlockView]:
+        def get_block_views_for_row(row: int) -> list[TetrisBlockView]:
             block_views = []
 
             for x in range(self.number_of_columns):

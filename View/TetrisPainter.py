@@ -19,7 +19,6 @@ class TetrisPainter:
     score_view: ScoreView
     tetris_view: TetrisView
     tetris_info_view: TetrisInfoView
-    last_figure: Figure = None
 
     def __init__(self, number_of_rows: int, number_of_columns: int, number_of_offscreen_rows: int):
         screen_width = pygame.display.Info().current_w
@@ -41,19 +40,20 @@ class TetrisPainter:
 
         tetris_info_view_x_offset = tetris_view_x_offset + tetris_view_width
         self.tetris_info_view = TetrisInfoView(
-            tetris_view_x_offset, screen_height, tetris_info_view_x_offset, 0)
+            tetris_view_x_offset, screen_height,
+            tetris_info_view_x_offset, 0, self.tetris_view.block_description, BackgroundView.unused_area_color)
 
         self.background_view.draw(self.screen)
+
+    def add_to_static_blocks(self, figure: Figure):
+        if figure is not None:
+            self.tetris_view.add_to_static_blocks(figure)
 
     def draw_figure(self, figure: Figure, is_new_figure: bool):
         updated_rects = []
 
         if is_new_figure:
-            if self.last_figure:
-                self.tetris_view.add_to_static_blocks(self.last_figure)
-
             self.tetris_view.set_moving_figure(figure)
-            self.last_figure = deepcopy(figure)
         else:
             cleared_rects = self.tetris_view.clear_moving_figure()
             updated_rects.extend(cleared_rects)
@@ -67,7 +67,12 @@ class TetrisPainter:
 
     def draw_score(self, score: int):
         self.tetris_info_view.update_score(score)
-        self.tetris_info_view.draw(self.screen)
+        self.tetris_info_view.draw_score(self.screen)
+
+    def draw_figure_preview(self, figure: Figure):
+        self.tetris_info_view.update_figure_preview(figure)
+        updated_rects = self.tetris_info_view.draw_figure_preview(self.screen)
+        pygame.display.update(updated_rects)
 
     def color_rows(self, rows: list[int], block_color: BlockColor):
         updated_rects = self.tetris_view.color_rows(
@@ -76,7 +81,8 @@ class TetrisPainter:
 
     def redraw_all(self, field: numpy.ndarray):
         self.background_view.draw(self.screen)
-        self.tetris_info_view.draw(self.screen)
+        self.tetris_info_view.draw_score(self.screen)
+        self.tetris_info_view.draw_figure_preview(self.screen)
         self.tetris_view.set_static_blocks(field)
         self.tetris_view.draw_all(self.screen)
         pygame.display.update()
