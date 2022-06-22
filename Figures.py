@@ -152,6 +152,5 @@ class Figure:
         self.offset.y = 0.0
 
         if self.horizontal_movement_converter:
-            self.position.x += -1 if self.horizontal_movement_converter.is_negative else 1
             self.horizontal_movement_converter = None
         self.offset.x = 0.0
