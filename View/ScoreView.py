@@ -1,8 +1,6 @@
 # Original from https://stackoverflow.com/questions/15488293/render-anti-aliased-text-on-transparent-surface-in-pygame
 import pygame
 
-from Figures import BlockPosition
-
 
 class TextView():
     use_antialiasing: bool = True
@@ -15,14 +13,12 @@ class TextView():
     x_position: int
     y_position: int
 
-    def __init__(self, font: pygame.font.Font, color: pygame.Color,
-                 x_position: int, y_position: int, parent_surface_width: int,
-                 parent_surface_height: int):
+    def __init__(self, font: pygame.font.Font, color: pygame.Color, x_position: int, y_position: int):
         self.font = font
         self.color = color
         self.text = ""
-        self.x_position = x_position + 4 * (parent_surface_width / 50)
-        self.y_position = y_position + (parent_surface_width / 50)
+        self.x_position = x_position + 100
+        self.y_position = y_position + 20
 
     def _render(self):
         """no AA = automatic transparent. With AA you need to set the color key too"""
@@ -47,16 +43,19 @@ class TextView():
 
 class ScoreView:
     color: pygame.Color = (40, 40, 40)
-    max_screen_distance: int = 10
+    width: int
+    height: int
 
     font: pygame.font.Font
     text_wall: TextView
 
-    def __init__(self, x_position: int, y_position: int,
-                 parent_surface_width: int, parent_surface_height: int):
+    def __init__(self, x_position: int, y_position: int, width: int, height: int):
         self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 50)
+        self.width = width
+        self.height = height
+        text_y_position = y_position + height / 2 - self.font.get_height()
         self.text_wall = TextView(
-            self.font, self.color, x_position, y_position, parent_surface_width, parent_surface_height)
+            self.font, self.color, x_position, text_y_position)
 
     def _get_score_text(self, score: int):
         return "Score: " + str(score)

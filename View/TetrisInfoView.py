@@ -21,11 +21,14 @@ class TetrisInfoView:
         self.x_position = x_position
         self.y_position = y_position
 
-        self.score_view = ScoreView(x_position, y_position, width, height)
-        figure_preview_x_position = x_position + 300
-        figure_preview_y_position = y_position + block_description.width * 3
+        sub_area_height = height / 8
+        current_y_position = y_position
+        self.score_view = ScoreView(
+            x_position, current_y_position, width, sub_area_height)
+
+        current_y_position += sub_area_height
         self.figure_preview_view = FigurePreviewView(
-            figure_preview_x_position, figure_preview_y_position, block_description, background_color)
+            x_position, current_y_position, block_description, background_color)
 
     def update_score(self, score: int):
         self.score_view.update(score, self.surface)

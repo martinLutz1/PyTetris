@@ -26,6 +26,15 @@ class BlockPosition:
 FigureDescription = list[BlockPosition]
 
 
+class StaticFigureDescription:
+    position: BlockPosition
+    description: FigureDescription
+
+    def __init__(self, offset: Offset, description: FigureDescription):
+        self.description = description
+        self.offset = offset
+
+
 class BlockColor:
     body_color: Color
     border_color: Color
@@ -37,9 +46,9 @@ class BlockColor:
 
 class Figure:
     position: BlockPosition
-    relative_positions: list[BlockPosition]
+    current_figure_description: list[BlockPosition]
     figure_descriptions: list[FigureDescription]
-    static_figure_description: FigureDescription
+    static_figure_description: StaticFigureDescription
     offset: Offset
     block_color: BlockColor
     ms_elapsed_since_last_step: int
@@ -49,7 +58,7 @@ class Figure:
     last_move: Direction = None
 
     def __init__(self, position: BlockPosition, figure_descriptions: List[FigureDescription],
-                 block_color: BlockColor, static_figure_description: FigureDescription):
+                 block_color: BlockColor, static_figure_description: StaticFigureDescription):
         self.position = position
         self.figure_descriptions = figure_descriptions
         self.static_figure_description = static_figure_description
@@ -140,9 +149,10 @@ class Figure:
         return self._get_blocks_internal(self.position, self.figure_descriptions[0])
 
     def get_static_blocks(self) -> list[BlockPosition]:
-        blocks = [BlockPosition(0, 0)]
-        blocks.extend(self.static_figure_description)
-        return blocks
+        return self.static_figure_description.description
+
+    def get_static_offset(self) -> Offset:
+        return self.static_figure_description.offset
 
     # Stop any ongoing movement and snap to the target position.
     def finalize(self):
