@@ -11,7 +11,7 @@ fps = 120
 fpsClock = pygame.time.Clock()
 key_press_handler = KeyPressHandler()
 running = True
-long_press_direction_time_counter = TimeCounter(150)
+long_press_direction_time_counter = TimeCounter(250)
 is_rotation_key_pressed_before = False
 
 number_of_offscreen_rows = 2

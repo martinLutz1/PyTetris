@@ -23,6 +23,7 @@ class Tetris:
     field: numpy.ndarray
     moving_figure: Figure
     auto_move_time_counter: TimeCounter
+    manual_move_time_counter: TimeCounter
     last_figure: Figure
     next_figure: Figure
     player: Player
@@ -33,6 +34,7 @@ class Tetris:
         self.next_figure = None
         self.moving_figure = None
         self.player = Player()
+        self.manual_move_time_counter = TimeCounter(20)
         self._start_new_game()
 
     def spawn_figure(self, position: BlockPosition):
@@ -119,10 +121,15 @@ class Tetris:
             return MoveResult.Nothing
 
     def move(self, direction: Direction) -> MoveResult:
-        movement_result = self._move_internal(
-            direction, self.manual_movement_duration_ms)
+        move_result = MoveResult.Nothing
+
+        if self.manual_move_time_counter.is_elapsed():
+            move_result = self._move_internal(
+                direction, self.manual_movement_duration_ms)
+            self.manual_move_time_counter.restart()
         self.moving_figure.update_position()
-        return movement_result
+
+        return move_result
 
     # Returns list of scored rows.
     def check_rows(self) -> List[int]:
