@@ -32,12 +32,19 @@ class TimeCounter:
     def __init__(self, duration_ms: int):
         self.duration_ms = duration_ms
         self.ms_elapsed_on_start = 0
+        self.start()
 
     def start(self):
         self.ms_elapsed_on_start = time.time() * 1000
 
+    def restart(self):
+        self.start()
+
     def stop(self):
         self.ms_elapsed_on_start = 0
+
+    def update_duration(self, new_duration_ms: int):
+        self.duration_ms = new_duration_ms
 
     def is_started(self):
         return self.ms_elapsed_on_start > 0

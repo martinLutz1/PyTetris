@@ -15,13 +15,14 @@ class MoveResult(Enum):
 class Tetris:
     start_update_interval_ms: int = 500
     min_update_interval_ms: int = 150
-    manual_movement_duration_ms: int = 30
+    manual_movement_duration_ms: int = 50
 
     number_of_rows: int
     number_of_columns: int
     update_interval_ms: int
     field: numpy.ndarray
     moving_figure: Figure
+    auto_move_time_counter: TimeCounter
     last_figure: Figure
     next_figure: Figure
     player: Player
@@ -91,6 +92,7 @@ class Tetris:
             (self.number_of_rows, self.number_of_columns), None)
         self.spawn_figure(BlockPosition(int(self.number_of_columns / 2), 1))
         self.update_interval_ms = self.start_update_interval_ms
+        self.auto_move_time_counter = TimeCounter(self.update_interval_ms)
         self.player.reset()
 
     def _move_internal(self, direction: Direction, duration_ms: int) -> MoveResult:
@@ -144,6 +146,8 @@ class Tetris:
                     self.min_update_interval_ms, self.update_interval_ms)
                 self.update_interval_ms = min(
                     self.start_update_interval_ms, self.update_interval_ms)
+                self.auto_move_time_counter.update_duration(
+                    self.update_interval_ms)
             update_game_speed()
 
         return scored_rows
@@ -152,8 +156,10 @@ class Tetris:
         move_result = MoveResult.Nothing
 
         if not self.moving_figure.is_moving_down():
-            move_result = self._move_internal(
-                Direction.down, self.update_interval_ms)
+            if self.auto_move_time_counter.is_elapsed():
+                move_result = self._move_internal(
+                    Direction.down, self.manual_movement_duration_ms)
+                self.auto_move_time_counter.restart()
         self.moving_figure.update_position()
 
         return move_result if (move_result is not move_result.Nothing) else MoveResult.HasMoved

@@ -34,7 +34,6 @@ def draw_on_update(move_result: MoveResult):
 
         case MoveResult.HasSpawnedFigure:
             tetris_painter.draw_figure(last_figure, False)
-
             scored_rows = tetris.check_rows()
             if len(scored_rows) > 0:
                 tetris_painter.color_rows(scored_rows, last_figure.block_color)
