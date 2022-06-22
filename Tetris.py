@@ -13,9 +13,9 @@ class MoveResult(Enum):
 
 
 class Tetris:
+    movement_duration_ms: int = 50
     start_update_interval_ms: int = 500
     min_update_interval_ms: int = 150
-    manual_movement_duration_ms: int = 50
 
     number_of_rows: int
     number_of_columns: int
@@ -46,7 +46,6 @@ class Tetris:
         self.next_figure = FigureBuilder.random(position)
 
     def _move_collides(self, figure: Figure, direction: Direction) -> bool:
-        is_moving_down = figure.is_moving_down()
         is_moving_right = figure.is_moving_right()
         is_moving_left = figure.is_moving_left()
 
@@ -60,10 +59,6 @@ class Tetris:
             if is_moving_left:
                 block_to_be_checked.append(BlockPosition(
                     block_position.x - 1, block_position.y))
-
-            if is_moving_down:
-                block_to_be_checked.append(BlockPosition(
-                    block_position.x, block_position.y + 1))
 
             # Border collision
             if any(position.x >= self.number_of_columns for position in block_to_be_checked):
@@ -125,7 +120,7 @@ class Tetris:
 
         if self.manual_move_time_counter.is_elapsed():
             move_result = self._move_internal(
-                direction, self.manual_movement_duration_ms)
+                direction, self.movement_duration_ms)
             self.manual_move_time_counter.restart()
         self.moving_figure.update_position()
 
@@ -162,11 +157,10 @@ class Tetris:
     def auto_move_down(self) -> MoveResult:
         move_result = MoveResult.Nothing
 
-        if not self.moving_figure.is_moving_down():
-            if self.auto_move_time_counter.is_elapsed():
-                move_result = self._move_internal(
-                    Direction.down, self.manual_movement_duration_ms)
-                self.auto_move_time_counter.restart()
+        if self.auto_move_time_counter.is_elapsed():
+            move_result = self._move_internal(
+                Direction.down, self.movement_duration_ms)
+            self.auto_move_time_counter.restart()
         self.moving_figure.update_position()
 
         return move_result if (move_result is not move_result.Nothing) else MoveResult.HasMoved
