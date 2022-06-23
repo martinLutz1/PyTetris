@@ -143,7 +143,7 @@ class Tetris:
 
             def update_game_speed():
                 self.update_interval_ms = self.start_update_interval_ms - \
-                    int(self.player.score / 20)
+                    int(self.player.score / 50)
                 self.update_interval_ms = max(
                     self.min_update_interval_ms, self.update_interval_ms)
                 self.update_interval_ms = min(
