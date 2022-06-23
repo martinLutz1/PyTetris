@@ -163,7 +163,7 @@ class Tetris:
             self.auto_move_time_counter.restart()
         self.moving_figure.update_position()
 
-        return move_result if (move_result is not move_result.Nothing) else MoveResult.HasMoved
+        return move_result
 
     def get_last_figure(self) -> Figure:
         return self.last_figure

@@ -1,5 +1,6 @@
 
 import pygame
+from SoundPlayer import SoundPlayer, Sound
 from Tetris import MoveResult, Tetris
 from View.TetrisPainter import TetrisPainter
 from KeyPressHandler import KeyPressHandler
@@ -10,6 +11,7 @@ pygame.init()
 fps = 120
 fpsClock = pygame.time.Clock()
 key_press_handler = KeyPressHandler()
+sound_player = SoundPlayer()
 running = True
 long_press_direction_time_counter = TimeCounter(250)
 is_rotation_key_pressed_before = False
@@ -20,22 +22,36 @@ tetris_painter = TetrisPainter(
     tetris.number_of_rows, tetris.number_of_columns, number_of_offscreen_rows)
 
 
-def draw_on_update(move_result: MoveResult):
+def draw_all():
+    moving_figure = tetris.get_moving_figure()
+    next_figure = tetris.get_next_figure()
+
+    tetris_painter.draw_score(tetris.player.score)
+    tetris_painter.draw_figure(moving_figure, True)
+    tetris_painter.draw_figure_preview(next_figure)
+    tetris_painter.redraw_all(tetris.field)
+
+
+def handle_update(move_result: MoveResult):
     moving_figure = tetris.get_moving_figure()
     next_figure = tetris.get_next_figure()
     last_figure = tetris.get_last_figure()
 
     match move_result:
         case MoveResult.IsGameOver:
-            tetris_painter.draw_score(tetris.player.score)
-            tetris_painter.draw_figure(moving_figure, True)
-            tetris_painter.draw_figure_preview(next_figure)
-            tetris_painter.redraw_all(tetris.field)
+            sound_player.play_sound(Sound.gameover)
+            draw_all()
 
         case MoveResult.HasSpawnedFigure:
             tetris_painter.draw_figure(last_figure, False)
             scored_rows = tetris.check_rows()
-            if len(scored_rows) > 0:
+            number_of_scored_rows = len(scored_rows)
+            if number_of_scored_rows > 0:
+                if number_of_scored_rows == 4:
+                    sound_player.play_sound(Sound.clear_row_perfect)
+                else:
+                    sound_player.play_sound(Sound.clear_row)
+
                 tetris_painter.color_rows(scored_rows, last_figure.block_color)
                 fpsClock.tick(3)
                 tetris_painter.draw_score(tetris.player.score)
@@ -43,17 +59,20 @@ def draw_on_update(move_result: MoveResult):
                 tetris_painter.draw_figure(moving_figure, True)
                 tetris_painter.redraw_all(tetris.field)
             else:
+                sound_player.play_sound(Sound.landing)
                 tetris_painter.draw_figure(moving_figure, True)
             tetris_painter.draw_figure_preview(next_figure)
 
         case MoveResult.HasMoved:
+            sound_player.play_sound(Sound.move_figure)
             tetris_painter.draw_figure(moving_figure, False)
 
         case MoveResult.Nothing:
-            pass
+            tetris_painter.draw_figure(moving_figure, False)
 
 
-draw_on_update(MoveResult.IsGameOver)
+draw_all()
+sound_player.play_theme()
 
 while running:
     key_press_handler.update_pressed_keys()
@@ -65,7 +84,7 @@ while running:
     if is_rotation_key_pressed:
         if not is_rotation_key_pressed_before:
             move_result = tetris.move(Direction.up)
-            draw_on_update(move_result)
+            handle_update(move_result)
     is_rotation_key_pressed_before = is_rotation_key_pressed
 
     # Handle movement
@@ -75,19 +94,19 @@ while running:
             if not long_press_direction_time_counter.is_started():
                 long_press_direction_time_counter.start()
                 move_result = tetris.move(direction)
-                draw_on_update(move_result)
+                handle_update(move_result)
             # Long key press
             elif long_press_direction_time_counter.is_elapsed():
                 # Long key press is kinda annoying for rotating the figure.
                 if direction != Direction.up:
                     move_result = tetris.move(direction)
-                    draw_on_update(move_result)
+                    handle_update(move_result)
 
     if not key_press_handler.is_any_direction_key_pressed():
         long_press_direction_time_counter.stop()
 
     move_result = tetris.auto_move_down()
-    draw_on_update(move_result)
+    handle_update(move_result)
     fpsClock.tick(fps)
 
 pygame.quit()
