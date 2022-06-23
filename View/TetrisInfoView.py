@@ -21,14 +21,15 @@ class TetrisInfoView:
         self.x_position = x_position
         self.y_position = y_position
 
-        sub_area_height = height / 8
+        sub_area_height = 250
         current_y_position = y_position
+        padding = 80
         self.score_view = ScoreView(
-            x_position, current_y_position, width, sub_area_height)
+            x_position + padding, current_y_position, width, sub_area_height, block_description)
 
         current_y_position += sub_area_height
         self.figure_preview_view = FigurePreviewView(
-            x_position, current_y_position, block_description, background_color)
+            x_position + padding, current_y_position, block_description, background_color)
 
     def update_score(self, score: int):
         self.score_view.update(score, self.surface)
@@ -40,9 +41,5 @@ class TetrisInfoView:
         self.score_view.draw(parent_surface)
 
     def draw_figure_preview(self, parent_surface: pygame.Surface) -> list[pygame.Rect]:
-        updated_rects = []
-        cleared_rects = self.figure_preview_view.clear(parent_surface)
-        updated_rects.extend(cleared_rects)
-        drawn_rects = self.figure_preview_view.draw(parent_surface)
-        updated_rects.extend(drawn_rects)
+        updated_rects = self.figure_preview_view.draw(parent_surface)
         return updated_rects

@@ -1,68 +1,60 @@
-# Original from https://stackoverflow.com/questions/15488293/render-anti-aliased-text-on-transparent-surface-in-pygame
+
+
 import pygame
-
-
-class TextView():
-    use_antialiasing: bool = True
-
-    font: pygame.font.Font
-    color: pygame.Color
-    text: str
-    surface: pygame.Surface
-    rect: pygame.Rect
-    x_position: int
-    y_position: int
-
-    def __init__(self, font: pygame.font.Font, color: pygame.Color, x_position: int, y_position: int):
-        self.font = font
-        self.color = color
-        self.text = ""
-        self.x_position = x_position + 100
-        self.y_position = y_position + 20
-
-    def _render(self):
-        """no AA = automatic transparent. With AA you need to set the color key too"""
-        self.surface = self.font.render(
-            self.text, self.use_antialiasing, self.color)
-        self.rect = self.surface.get_rect()
-        self.rect.x = self.x_position
-        self.rect.y = self.y_position
-
-    def draw(self, parent_surface: pygame.Surface):
-        self._render()
-        parent_surface.blit(self.surface, self.rect)
-
-    # Returns whether the text was updated.
-    def update_text(self, text: str) -> bool:
-        if self.text != text:
-            self.text = text
-            return True
-        else:
-            return False
+from View.DrawSupport import draw_frame
+from View.TextView import TextView
+from View.ViewCommon import BlockDescription
 
 
 class ScoreView:
-    color: pygame.Color = (40, 40, 40)
+    color: pygame.Color = (30, 30, 30)
     width: int
     height: int
+    x_position: int
+    y_position: int
+    block_description: BlockDescription
 
-    font: pygame.font.Font
-    text_wall: TextView
+    score_text: TextView
+    score_value: TextView
 
-    def __init__(self, x_position: int, y_position: int, width: int, height: int):
-        self.font = pygame.font.Font("Font/OpenDyslexic3-Regular.ttf", 50)
+    def __init__(self, x_position: int, y_position: int, width: int, height: int,
+                 block_description: BlockDescription):
         self.width = width
         self.height = height
-        text_y_position = y_position + height / 2 - self.font.get_height()
-        self.text_wall = TextView(
-            self.font, self.color, x_position, text_y_position)
+        self.x_position = x_position
+        self.y_position = y_position + 80
+        self.block_description = block_description
+        score_text_font = pygame.font.Font(
+            "Font/OpenDyslexic3-Regular.ttf", 40)
+        self.score_text = TextView(
+            score_text_font, self.color, x_position, y_position)
+        self.score_text.update_text("Score")
 
-    def _get_score_text(self, score: int):
-        return "Score: " + str(score)
+        rect_width = 4 * self.block_description.width  # Max block widht: 2
+        rect_height = 2 * self.block_description.width  # Max block height: 4
+
+        score_value_font = pygame.font.Font(
+            "Font/OpenDyslexic3-Regular.ttf", 50)
+        score_value_view_x_position = x_position + \
+            rect_width / 2 - 1.5 * block_description.width
+        score_value_view_y_position = y_position + rect_height / 2 + 20
+
+        self.score_value = TextView(
+            score_value_font, self.color, score_value_view_x_position, score_value_view_y_position)
 
     def update(self, score: int, parent_surface: pygame.Surface):
-        if self.text_wall.update_text(self._get_score_text(score)):
-            self.text_wall.draw(parent_surface)
+        if self.score_value.update_text(str(score)):
+            self.score_text.draw(parent_surface)
+            self.score_value.draw(parent_surface)
 
-    def draw(self, parent_surface: pygame.Surface):
-        self.text_wall.draw(parent_surface)
+    def draw(self, parent_surface: pygame.Surface) -> list[pygame.Rect]:
+        self.score_text.draw(parent_surface)
+
+        rect_width = 4 * self.block_description.width  # Max block widht: 2
+        rect_height = 2 * self.block_description.width  # Max block height: 4
+        border_rect = pygame.Rect(
+            self.x_position, self.y_position, rect_width, rect_height)
+        draw_frame(parent_surface, border_rect, self.block_description)
+
+        self.score_value.draw(parent_surface)
+        return [border_rect]

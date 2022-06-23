@@ -1,6 +1,8 @@
 import pygame
 from pygame import gfxdraw
 
+from View.ViewCommon import BlockDescription
+
 
 def draw_rounded_rect(surface, rect, color, corner_radius):
     ''' Draw a rectangle with rounded corners.
@@ -64,3 +66,11 @@ def draw_bordered_rounded_rect(surface, rect, color, border_color, corner_radius
         pygame.draw.rect(surface, color, rect)
     else:
         draw_rounded_rect(surface, rect, color, inner_radius)
+
+
+def draw_frame(surface: pygame.Surface, rect: pygame.Rect, block_description: BlockDescription):
+    frame_color = pygame.Color(100, 100, 100)
+    frame_border_color = pygame.Color(50, 50, 50)
+
+    draw_bordered_rounded_rect(
+        surface, rect, frame_color, frame_border_color, 10, block_description.width / 4)
