@@ -1,10 +1,10 @@
-from copy import deepcopy
-from turtle import color
-import pygame
 
 from Figures import BlockColor, BlockPosition, Offset
 from View.DrawSupport import draw_bordered_rounded_rect
 from View.ViewCommon import BlockDescription
+
+from copy import deepcopy
+import pygame
 
 
 class BlockView:

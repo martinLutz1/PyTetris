@@ -1,6 +1,6 @@
-import pygame
-
 from View.ViewCommon import ViewDescription
+
+import pygame
 
 
 class BackgroundView:

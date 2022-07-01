@@ -1,12 +1,11 @@
-
-
-from copy import deepcopy
-import pygame
 from Figures import Figure
 from View.BlockView import BlockView
 from View.DrawSupport import draw_frame
 from View.TextView import TextView
 from View.ViewCommon import *
+
+from copy import deepcopy
+import pygame
 
 
 class FigurePreviewView:

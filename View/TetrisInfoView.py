@@ -1,10 +1,9 @@
-from copy import deepcopy
-import pygame
 from Figures import Figure
 from View.FigurePreviewView import FigurePreviewView
-
 from View.ScoreView import ScoreView
 from View.ViewCommon import BlockDescription
+
+import pygame
 
 
 class TetrisInfoView:

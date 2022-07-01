@@ -1,8 +1,8 @@
+from View.ViewCommon import BlockDescription
+
 from copy import deepcopy
 import pygame
 from pygame import gfxdraw
-
-from View.ViewCommon import BlockDescription
 
 
 def draw_rounded_rect(surface, rect, color, corner_radius):

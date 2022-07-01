@@ -1,9 +1,10 @@
-from copy import deepcopy
-import pygame
 
 from Figures import BlockColor, BlockPosition, Figure, Offset
 from View.DrawSupport import draw_bordered_rounded_rect
 from View.ViewCommon import BlockDescription
+
+from copy import deepcopy
+import pygame
 
 
 class BlockSprite(pygame.sprite.Sprite):

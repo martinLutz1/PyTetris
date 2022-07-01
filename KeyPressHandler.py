@@ -1,5 +1,6 @@
-import pygame
 from Common import Direction
+
+import pygame
 
 
 class KeyPressHandler:

@@ -1,8 +1,7 @@
-from copy import deepcopy
-from typing import List
-from pygame import Color
-
 from Common import *
+
+from copy import deepcopy
+from pygame import Color
 
 
 class Offset:
@@ -57,7 +56,7 @@ class Figure:
     vertical_movement_converter: DurationToFactorConverter = None
     last_move: Direction = None
 
-    def __init__(self, position: BlockPosition, figure_descriptions: List[FigureDescription],
+    def __init__(self, position: BlockPosition, figure_descriptions: list[FigureDescription],
                  block_color: BlockColor, static_figure_description: StaticFigureDescription):
         self.position = position
         self.figure_descriptions = figure_descriptions

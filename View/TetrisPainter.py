@@ -1,15 +1,13 @@
-from copy import deepcopy
-import numpy
-import pygame
-from typing import List
 from Figures import BlockColor, Figure
-
 from View.BackgroundView import BackgroundView
 from View.DrawSupport import *
 from View.ScoreView import ScoreView
 from View.TetrisInfoView import TetrisInfoView
 from View.TetrisView import TetrisView
 from View.ViewCommon import ViewDescription
+
+import numpy
+import pygame
 
 
 class TetrisPainter:

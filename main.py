@@ -1,10 +1,12 @@
 
-import pygame
 from SoundPlayer import SoundPlayer, Sound
 from Tetris import MoveResult, Tetris
 from View.TetrisPainter import TetrisPainter
 from KeyPressHandler import KeyPressHandler
 from Common import Direction, TimeCounter
+
+import pygame
+
 
 pygame.init()
 

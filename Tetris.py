@@ -1,8 +1,9 @@
-from enum import Enum
-import numpy
 from FigureBuilder import FigureBuilder
 from Figures import *
 from Player import Player
+
+from enum import Enum
+import numpy
 
 
 class MoveResult(Enum):
@@ -127,7 +128,7 @@ class Tetris:
         return move_result
 
     # Returns list of scored rows.
-    def check_rows(self) -> List[int]:
+    def check_rows(self) -> list[int]:
         scored_rows = []
         for y in range(self.number_of_rows):
             if not (None in self.field[y]):

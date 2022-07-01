@@ -1,9 +1,10 @@
 
 
-import pygame
 from View.DrawSupport import draw_frame
 from View.TextView import TextView
 from View.ViewCommon import *
+
+import pygame
 
 
 class ScoreView:

@@ -1,11 +1,12 @@
-from copy import deepcopy
-import numpy
 
-import pygame
 from Figures import BlockColor, BlockPosition, Figure, Offset
 from View.FigureSprite import FigureSprite
 from View.ViewCommon import BlockDescription
 from View.BlockView import TetrisBlockView
+
+from copy import deepcopy
+import numpy
+import pygame
 
 
 class TetrisView:

@@ -1,8 +1,8 @@
-# Original from https://stackoverflow.com/questions/15488293/render-anti-aliased-text-on-transparent-surface-in-pygame
 import pygame
 
 
 class TextView():
+    # Original from https://stackoverflow.com/questions/15488293/render-anti-aliased-text-on-transparent-surface-in-pygame
     use_antialiasing: bool = True
 
     font: pygame.font.Font

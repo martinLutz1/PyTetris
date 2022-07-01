@@ -1,7 +1,8 @@
-from enum import Enum
-import random
 from Common import *
 from Figures import BlockColor, BlockPosition, Figure, Offset, StaticFigureDescription
+
+from enum import Enum
+import random
 
 
 class FigureBuilder:
