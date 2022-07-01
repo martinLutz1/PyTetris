@@ -1,5 +1,4 @@
 from Figures import BlockColor, Figure
-from View.BackgroundView import BackgroundView
 from View.DrawSupport import *
 from View.ScoreView import ScoreView
 from View.TetrisInfoView import TetrisInfoView
@@ -11,9 +10,10 @@ import pygame
 
 
 class TetrisPainter:
+    background_color: pygame.Color = (200, 200, 200)
+
     screen: pygame.Surface
     view_description: ViewDescription
-    background_view: BackgroundView
     score_view: ScoreView
     tetris_view: TetrisView
     tetris_info_view: TetrisInfoView
@@ -24,23 +24,24 @@ class TetrisPainter:
         self.screen = pygame.display.set_mode(
             (screen_width, screen_height), pygame.FULLSCREEN)
 
-        tetris_view_width = screen_height / 2
-        tetris_view_x_offset = (screen_width - tetris_view_width) / 2
+        tetris_view_width = screen_height / 2 + 2 * TetrisView.border_thickness
+        tetris_view_x_offset = (
+            screen_width - tetris_view_width) / 2 - TetrisView.border_thickness
         self.view_description = ViewDescription(
-            screen_width, screen_height, tetris_view_width, tetris_view_x_offset)
+            screen_width, screen_height, tetris_view_width)
 
-        self.background_view = BackgroundView(
-            screen_width, screen_height, self.view_description)
-
+        # Init tetris view
         self.tetris_view = TetrisView(
-            tetris_view_width, screen_height, tetris_view_x_offset, 0,
-            number_of_rows, number_of_columns, number_of_offscreen_rows)
+            tetris_view_x_offset, 0, tetris_view_width, screen_height,
+            number_of_rows, number_of_columns, number_of_offscreen_rows, self.view_description)
 
+        # Init tetris info view
         tetris_info_view_x_offset = tetris_view_x_offset + tetris_view_width
         self.tetris_info_view = TetrisInfoView(
-            tetris_view_x_offset, screen_height, tetris_info_view_x_offset, 0, self.tetris_view.block_description)
+            tetris_info_view_x_offset, 0,
+            tetris_view_x_offset, screen_height, self.tetris_view.block_description)
 
-        self.background_view.draw(self.screen)
+        self.screen.fill(self.background_color)
 
     def add_to_static_blocks(self, figure: Figure):
         if figure is not None:
@@ -76,7 +77,7 @@ class TetrisPainter:
         pygame.display.update(updated_rects)
 
     def redraw_all(self, field: numpy.ndarray):
-        self.background_view.draw(self.screen)
+        self.screen.fill(self.background_color)
         self.tetris_info_view.draw_score(self.screen)
         self.tetris_info_view.draw_figure_preview(self.screen)
         self.tetris_view.set_static_blocks(field)

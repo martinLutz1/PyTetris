@@ -17,7 +17,7 @@ class TetrisInfoView:
     x_position: int
     y_position: int
 
-    def __init__(self, width: int, height: int, x_position: int, y_position: int, block_description: BlockDescription):
+    def __init__(self, x_position: int, y_position: int, width: int, height: int,  block_description: BlockDescription):
         self.surface = pygame.Surface((width, height))
         self.x_position = x_position
         self.y_position = y_position

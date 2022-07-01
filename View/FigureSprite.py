@@ -9,10 +9,11 @@ import pygame
 
 class BlockSprite(pygame.sprite.Sprite):
     number_of_offscreen_rows: int
+    x_offset: int
 
     def __init__(self, description: BlockDescription, position: BlockPosition,
                  offset: Offset, color: BlockColor, background_color: pygame.Color,
-                 number_of_offscreen_rows: int):
+                 number_of_offscreen_rows: int, x_offset: int = 0):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface(
             (description.width, description.height))
@@ -21,10 +22,12 @@ class BlockSprite(pygame.sprite.Sprite):
         draw_bordered_rounded_rect(self.image, deepcopy(self.rect), color.body_color,
                                    color.border_color, 10, description.border_thickness)
         self.number_of_offscreen_rows = number_of_offscreen_rows
+        self.x_offset = x_offset
         self.update(position, offset)
 
     def update(self, block_position: BlockPosition, offset: Offset):
-        x_position = (float(block_position.x) + offset.x) * self.rect.width
+        x_position = (float(block_position.x) + offset.x) * \
+            self.rect.width + self.x_offset
         y_position = (float(block_position.y - self.number_of_offscreen_rows) + offset.y) * \
             self.rect.height
         self.rect.x = x_position
@@ -38,12 +41,12 @@ class FigureSprite():
     last_drawn_rects: list[pygame.Rect]
 
     def __init__(self, figure: Figure, block_description: BlockDescription,
-                 number_of_offscreen_rows: int, background_color: pygame.Color):
+                 number_of_offscreen_rows: int, background_color: pygame.Color, x_offset: int = 0):
         block_sprites = []
         for block_position in figure.get_blocks():
             block_sprite = BlockSprite(
                 block_description, block_position, figure.offset,
-                figure.block_color, background_color, number_of_offscreen_rows)
+                figure.block_color, background_color, number_of_offscreen_rows, x_offset)
             block_sprites.append(block_sprite)
 
         self.block_sprite_group = pygame.sprite.RenderUpdates(block_sprites)

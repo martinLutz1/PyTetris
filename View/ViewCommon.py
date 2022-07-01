@@ -19,13 +19,11 @@ class ViewDescription:
     screen_width: int
     screen_height: int
     tetris_width: int
-    tetris_area_x_offset: int
 
-    def __init__(self, screen_width: int, screen_height: int, tetris_width: int, x_screen_offset: int):
+    def __init__(self, screen_width: int, screen_height: int, tetris_width: int):
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.tetris_width = tetris_width
-        self.tetris_area_x_offset: int = x_screen_offset
 
 
 _font_path: str = "Font/OpenDyslexic3-Regular.ttf"
@@ -36,3 +34,6 @@ medium_font_height: int = 80
 big_font = pygame.font.Font(_font_path, 50)
 big_font_height: int = 120
 text_color = pygame.Color(30, 30, 30)
+tetris_bg_color = pygame.Color(80, 80, 80)
+border_color = pygame.Color(50, 50, 50)
+frame_color = pygame.Color(100, 100, 100)

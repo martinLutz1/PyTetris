@@ -1,4 +1,4 @@
-from View.ViewCommon import BlockDescription
+from View.ViewCommon import *
 
 from copy import deepcopy
 import pygame
@@ -70,8 +70,5 @@ def draw_bordered_rounded_rect(surface, rect, color, border_color, corner_radius
 
 
 def draw_frame(surface: pygame.Surface, rect: pygame.Rect, block_description: BlockDescription):
-    frame_color = pygame.Color(100, 100, 100)
-    frame_border_color = pygame.Color(50, 50, 50)
-
     draw_bordered_rounded_rect(
-        surface, deepcopy(rect), frame_color, frame_border_color, 10, block_description.width / 4)
+        surface, deepcopy(rect), frame_color, border_color, 10, block_description.width / 4)
