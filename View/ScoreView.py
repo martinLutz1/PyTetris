@@ -10,21 +10,21 @@ class ScoreView:
     text: str = "Score"
     score_x_padding: int = 10
 
-    width: int
-    height: int
-    frame_rect: pygame.Rect
     x_position: int
     y_position: int
+    width: int
+    height: int
     block_description: BlockDescription
     score_text: TextView
     score_value: TextView
+    frame_rect: pygame.Rect
 
     def __init__(self, x_position: int, y_position: int, width: int, height: int,
                  block_description: BlockDescription):
-        self.width = width
-        self.height = height
         self.x_position = x_position
         self.y_position = y_position
+        self.width = width
+        self.height = height
         self.block_description = block_description
 
         # Init score text

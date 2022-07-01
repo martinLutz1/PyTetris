@@ -8,6 +8,9 @@ from View.ViewCommon import BlockDescription
 
 
 class TetrisInfoView:
+    x_padding: int = 80
+    sub_area_height: int = 240
+
     surface: pygame.Surface
     score_view: ScoreView
     figure_preview_view: FigurePreviewView
@@ -15,21 +18,20 @@ class TetrisInfoView:
     x_position: int
     y_position: int
 
-    def __init__(self, width: int, height: int, x_position: int, y_position: int,
-                 block_description: BlockDescription, background_color: pygame.Color):
+    def __init__(self, width: int, height: int, x_position: int, y_position: int, block_description: BlockDescription):
         self.surface = pygame.Surface((width, height))
         self.x_position = x_position
         self.y_position = y_position
 
-        sub_area_height = 250
+        # Init score view
         current_y_position = y_position
-        padding = 80
         self.score_view = ScoreView(
-            x_position + padding, current_y_position, width, sub_area_height, block_description)
+            x_position + self.x_padding, current_y_position, width, self.sub_area_height, block_description)
 
-        current_y_position += sub_area_height
+        # Init figure preview view
+        current_y_position += self.sub_area_height
         self.figure_preview_view = FigurePreviewView(
-            x_position + padding, current_y_position, block_description, background_color)
+            x_position + self.x_padding, current_y_position, block_description)
 
     def update_score(self, score: int):
         self.score_view.update(score, self.surface)

@@ -40,8 +40,7 @@ class TetrisPainter:
 
         tetris_info_view_x_offset = tetris_view_x_offset + tetris_view_width
         self.tetris_info_view = TetrisInfoView(
-            tetris_view_x_offset, screen_height,
-            tetris_info_view_x_offset, 0, self.tetris_view.block_description, BackgroundView.unused_area_color)
+            tetris_view_x_offset, screen_height, tetris_info_view_x_offset, 0, self.tetris_view.block_description)
 
         self.background_view.draw(self.screen)
 
@@ -67,7 +66,6 @@ class TetrisPainter:
 
     def draw_score(self, score: int):
         self.tetris_info_view.update_score(score)
-        self.tetris_info_view.draw_score(self.screen)
 
     def draw_figure_preview(self, figure: Figure):
         self.tetris_info_view.update_figure_preview(figure)

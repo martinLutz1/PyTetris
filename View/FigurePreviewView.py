@@ -4,35 +4,40 @@ from copy import deepcopy
 import pygame
 from Figures import Figure
 from View.BlockView import BlockView
-from View.DrawSupport import draw_bordered_rounded_rect, draw_frame
+from View.DrawSupport import draw_frame
 from View.TextView import TextView
-from View.ViewCommon import BlockDescription
+from View.ViewCommon import *
 
 
 class FigurePreviewView:
-    color: pygame.Color = (40, 40, 40)
+    text: str = "Next"
+
     x_position: int
     y_position: int
     block_description: BlockDescription
-    background_color: pygame.Color
     figure: Figure
     last_drawn_rects: list[pygame.Rect]
     headline: TextView
+    frame_rect: pygame.Rect
 
-    def __init__(self, x_position: int, y_position: int, block_description: BlockDescription,
-                 background_color: pygame.Color):
+    def __init__(self, x_position: int, y_position: int, block_description: BlockDescription):
         self.x_position = x_position
-        self.y_position = y_position + 80
+        self.y_position = y_position
         self.block_description = block_description
-        self.background_color = background_color
         self.figure = None
         self.last_drawn_rects = []
 
-        font = pygame.font.Font(
-            "Font/OpenDyslexic3-Regular.ttf", 40)
+        # Init headline
         self.headline = TextView(
-            font, self.color, x_position, y_position)
-        self.headline.update_text("Next")
+            medium_font, text_color, x_position, y_position)
+        self.headline.update_text(self.text)
+
+        # Init frame
+        frame_width = 4 * self.block_description.width
+        frame_height = 5 * self.block_description.width
+        frame_y_position = y_position + medium_font_height
+        self.frame_rect = pygame.Rect(
+            x_position, frame_y_position, frame_width, frame_height)
 
     def update_figure(self, figure: Figure):
         self.figure = deepcopy(figure)
@@ -44,21 +49,17 @@ class FigurePreviewView:
         self.last_drawn_rects.clear()
         self.headline.draw(parent_surface)
 
-        rect_width = 4 * self.block_description.width
-        rect_height = 5 * self.block_description.width
-        frame_rect = pygame.Rect(
-            self.x_position, self.y_position, rect_width, rect_height)
-        draw_frame(parent_surface, frame_rect, self.block_description)
-        self.last_drawn_rects.append(frame_rect)
+        draw_frame(parent_surface, self.frame_rect, self.block_description)
+        self.last_drawn_rects.append(self.frame_rect)
 
         offset = self.figure.get_static_offset()
         for block in self.figure.get_static_blocks():
-            x_position = self.x_position + \
+            x_position = self.frame_rect.x + \
                 (block.x + 1 + offset.x) * self.block_description.width
-            y_position = self.y_position + \
+            y_position = self.frame_rect.y + \
                 (block.y + 0.5 + offset.y) * self.block_description.height
             block_view = BlockView(
                 x_position, y_position, self.block_description, self.figure.block_color)
             block_view.draw(parent_surface)
 
-        return [frame_rect]
+        return [self.frame_rect]
