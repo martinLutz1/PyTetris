@@ -3,17 +3,19 @@
 import pygame
 from View.DrawSupport import draw_frame
 from View.TextView import TextView
-from View.ViewCommon import BlockDescription
+from View.ViewCommon import *
 
 
 class ScoreView:
-    color: pygame.Color = (30, 30, 30)
+    text: str = "Score"
+    score_x_padding: int = 10
+
     width: int
     height: int
+    frame_rect: pygame.Rect
     x_position: int
     y_position: int
     block_description: BlockDescription
-
     score_text: TextView
     score_value: TextView
 
@@ -22,39 +24,34 @@ class ScoreView:
         self.width = width
         self.height = height
         self.x_position = x_position
-        self.y_position = y_position + 80
+        self.y_position = y_position
         self.block_description = block_description
-        score_text_font = pygame.font.Font(
-            "Font/OpenDyslexic3-Regular.ttf", 40)
+
+        # Init score text
         self.score_text = TextView(
-            score_text_font, self.color, x_position, y_position)
-        self.score_text.update_text("Score")
+            medium_font, text_color, x_position, y_position)
+        self.score_text.update_text(self.text)
 
-        rect_width = 4 * self.block_description.width  # Max block widht: 2
-        rect_height = 2 * self.block_description.width  # Max block height: 4
+        # Init frame
+        frame_width = 4 * block_description.width
+        frame_height = 2 * block_description.width
+        frame_y_position = y_position + medium_font_height
+        self.frame_rect = pygame.Rect(
+            x_position, frame_y_position, frame_width, frame_height)
 
-        score_value_font = pygame.font.Font(
-            "Font/OpenDyslexic3-Regular.ttf", 50)
+        # Init score value
         score_value_view_x_position = x_position + \
-            rect_width / 2 - 1.5 * block_description.width
-        score_value_view_y_position = y_position + rect_height / 2 + 20
-
+            frame_width / 2 - 1.5 * block_description.width + self.score_x_padding
+        score_value_view_y_position = y_position + frame_height / 1.5
         self.score_value = TextView(
-            score_value_font, self.color, score_value_view_x_position, score_value_view_y_position)
+            big_font, text_color, score_value_view_x_position, score_value_view_y_position)
 
     def update(self, score: int, parent_surface: pygame.Surface):
         if self.score_value.update_text(str(score)):
-            self.score_text.draw(parent_surface)
             self.score_value.draw(parent_surface)
 
     def draw(self, parent_surface: pygame.Surface) -> list[pygame.Rect]:
         self.score_text.draw(parent_surface)
-
-        rect_width = 4 * self.block_description.width  # Max block widht: 2
-        rect_height = 2 * self.block_description.width  # Max block height: 4
-        border_rect = pygame.Rect(
-            self.x_position, self.y_position, rect_width, rect_height)
-        draw_frame(parent_surface, border_rect, self.block_description)
-
+        draw_frame(parent_surface, self.frame_rect, self.block_description)
         self.score_value.draw(parent_surface)
-        return [border_rect]
+        return [self.frame_rect]

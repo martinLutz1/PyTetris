@@ -1,3 +1,4 @@
+from copy import deepcopy
 import pygame
 from pygame import gfxdraw
 
@@ -73,4 +74,4 @@ def draw_frame(surface: pygame.Surface, rect: pygame.Rect, block_description: Bl
     frame_border_color = pygame.Color(50, 50, 50)
 
     draw_bordered_rounded_rect(
-        surface, rect, frame_color, frame_border_color, 10, block_description.width / 4)
+        surface, deepcopy(rect), frame_color, frame_border_color, 10, block_description.width / 4)

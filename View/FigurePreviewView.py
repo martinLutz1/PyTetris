@@ -44,8 +44,8 @@ class FigurePreviewView:
         self.last_drawn_rects.clear()
         self.headline.draw(parent_surface)
 
-        rect_width = 4 * self.block_description.width  # Max block widht: 2
-        rect_height = 5 * self.block_description.width  # Max block height: 4
+        rect_width = 4 * self.block_description.width
+        rect_height = 5 * self.block_description.width
         frame_rect = pygame.Rect(
             self.x_position, self.y_position, rect_width, rect_height)
         draw_frame(parent_surface, frame_rect, self.block_description)
