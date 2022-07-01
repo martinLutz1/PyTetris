@@ -57,10 +57,10 @@ class TetrisView:
         pygame.draw.rect(self.surface, border_color, border_rect)
 
     def _get_block_view(self, color: pygame.Color, position: BlockPosition,
-                        offset: Offset = Offset(0, 0)) -> TetrisBlockView:
+                        offset: Offset = Offset(0, 0), x_offset: int = 0) -> TetrisBlockView:
         block_position = BlockPosition(
             position.x, position.y - self.number_of_offscreen_rows)
-        return TetrisBlockView(self.block_description, block_position, offset, color)
+        return TetrisBlockView(self.block_description, block_position, offset, color, self.border_thickness)
 
     def _get_block_views(self, figure: Figure) -> list[TetrisBlockView]:
         block_views = []

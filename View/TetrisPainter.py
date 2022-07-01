@@ -41,8 +41,6 @@ class TetrisPainter:
             tetris_info_view_x_offset, 0,
             tetris_view_x_offset, screen_height, self.tetris_view.block_description)
 
-        self.screen.fill(self.background_color)
-
     def add_to_static_blocks(self, figure: Figure):
         if figure is not None:
             self.tetris_view.add_to_static_blocks(figure)

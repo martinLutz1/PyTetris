@@ -33,14 +33,16 @@ class TetrisBlockView(BlockView):
     position: BlockPosition
     offset: Offset
     color: BlockColor
+    x_offset: int
 
     def __init__(self, block_description: BlockDescription, position: BlockPosition,
-                 offset: Offset, color: BlockColor):
+                 offset: Offset, color: BlockColor, x_offset: int = 0):
         super().__init__(0, 0, block_description, color)
         self.block_description = block_description
         self.position = position
         self.offset = offset
         self.color = color
+        self.x_offset = x_offset
 
     def update_position(self, position: BlockPosition, offset: Offset):
         self.position = deepcopy(position)
@@ -48,7 +50,7 @@ class TetrisBlockView(BlockView):
 
     def draw(self, parent_surface: pygame.Surface) -> pygame.Rect:
         self.x_position = (float(self.position.x) + self.offset.x) * \
-            self.block_description.width
+            self.block_description.width + self.x_offset
         self.y_position = (float(self.position.y) + self.offset.y) * \
             self.block_description.height
         return super().draw(parent_surface)
