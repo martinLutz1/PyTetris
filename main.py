@@ -79,12 +79,24 @@ while running:
     if key_press_handler.is_quit_pressed():
         running = False
 
+    def get_composed_move_result(move_result_list: list[MoveResult]):
+        composed_move_result = MoveResult.Nothing
+        for move_result in move_result_list:
+            if move_result is MoveResult.IsGameOver:
+                return MoveResult.IsGameOver
+            elif move_result.value > composed_move_result.value:
+                composed_move_result = move_result
+
+        return composed_move_result
+
+    frame_move_results = []
+
     # Handle rotation
     is_rotation_key_pressed = key_press_handler.is_key_pressed(Direction.up)
     if is_rotation_key_pressed:
         if not is_rotation_key_pressed_before:
             move_result = tetris.move(Direction.up)
-            handle_update(move_result)
+            frame_move_results.append(move_result)
     is_rotation_key_pressed_before = is_rotation_key_pressed
 
     # Handle movement
@@ -94,19 +106,22 @@ while running:
             if not long_press_direction_time_counter.is_started():
                 long_press_direction_time_counter.start()
                 move_result = tetris.move(direction)
-                handle_update(move_result)
+                frame_move_results.append(move_result)
+
             # Long key press
             elif long_press_direction_time_counter.is_elapsed():
-                # Long key press is kinda annoying for rotating the figure.
+                # Disable for rotation, because it's annyoing<
                 if direction != Direction.up:
                     move_result = tetris.move(direction)
-                    handle_update(move_result)
+                    frame_move_results.append(move_result)
 
     if not key_press_handler.is_any_direction_key_pressed():
         long_press_direction_time_counter.stop()
 
     move_result = tetris.auto_move_down()
-    handle_update(move_result)
+    frame_move_results.append(move_result)
+
+    handle_update(get_composed_move_result(frame_move_results))
     fpsClock.tick(fps)
 
 pygame.quit()
