@@ -174,3 +174,6 @@ class Tetris:
 
     def get_next_figure(self) -> Figure:
         return self.next_figure
+
+    def get_score(self) -> int:
+        return self.player.score
