@@ -87,6 +87,9 @@ class Figure:
             else:
                 self.offset.x = partial_block_offset_factor
 
+    def is_moving(self):
+        return (self.horizontal_movement_converter is not None) or (self.vertical_movement_converter is not None)
+
     def is_moving_down(self):
         return self.vertical_movement_converter is not None
 

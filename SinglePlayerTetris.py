@@ -85,7 +85,8 @@ class SinglePlayerTetris:
             case MoveResult.HasMoved:
                 self.sound_player.play_sound(Sound.move_figure)
                 self.tetris_painter.draw_figure(moving_figure, False)
-
+            case MoveResult.HasCollided:
+                pass
             case MoveResult.Nothing:
                 self.tetris_painter.draw_figure(moving_figure, False)
 
@@ -116,24 +117,25 @@ class SinglePlayerTetris:
                 move_results.append(move_result)
         self.is_rotation_key_pressed_before = is_rotation_key_pressed
 
+        # Handle movement
         if not self.key_press_handler.is_any_direction_key_pressed():
             self.long_press_direction_time_counter.stop()
         else:
-            # Handle movement
-            for direction in [Direction.right, Direction.left, Direction.down]:
+            def handle_direction(direction: Direction):
                 if self.key_press_handler.is_key_pressed(direction):
-                    # First registered key press
+                    # First key press
                     if not self.long_press_direction_time_counter.is_started():
                         self.long_press_direction_time_counter.start()
                         move_result = self.tetris.move(direction)
                         move_results.append(move_result)
-
                     # Long key press
                     elif self.long_press_direction_time_counter.is_elapsed():
-                        # Disable for rotation, because it's annyoing
-                        if direction != Direction.up:
-                            move_result = self.tetris.move(direction)
-                            move_results.append(move_result)
+                        move_result = self.tetris.move(direction)
+                        move_results.append(move_result)
+
+            handle_direction(Direction.right)
+            handle_direction(Direction.left)
+            handle_direction(Direction.down)
 
         return move_results
 
@@ -143,7 +145,7 @@ class SinglePlayerTetris:
 
         while self.is_running:
             frame_move_results = self._handle_input()
-            move_result = self.tetris.auto_move_down()
+            move_result = self.tetris.update()
             frame_move_results.append(move_result)
             aggregated_move_result = self._aggregate_move_results(
                 frame_move_results)

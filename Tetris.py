@@ -8,9 +8,10 @@ import numpy
 
 class MoveResult(Enum):
     Nothing = 1
-    HasMoved = 2
-    HasSpawnedFigure = 3
-    IsGameOver = 4
+    HasCollided = 2
+    HasMoved = 3
+    HasSpawnedFigure = 4
+    IsGameOver = 5
 
 
 class Tetris:
@@ -23,6 +24,8 @@ class Tetris:
     update_interval_ms: int
     field: numpy.ndarray
     moving_figure: Figure
+    is_auto_move_pending: bool
+    next_move: Direction
     auto_move_time_counter: TimeCounter
     manual_move_time_counter: TimeCounter
     last_figure: Figure
@@ -33,9 +36,12 @@ class Tetris:
         self.number_of_rows = number_of_rows
         self.number_of_columns = number_of_columns
         self.next_figure = None
+        self.last_figure = None
         self.moving_figure = None
+        self.is_auto_move_pending = False
+        self.next_move = None
         self.player = Player()
-        self.manual_move_time_counter = TimeCounter(20)
+        self.manual_move_time_counter = TimeCounter(60)
         self._start_new_game()
 
     def spawn_figure(self, position: BlockPosition):
@@ -93,9 +99,12 @@ class Tetris:
         self.auto_move_time_counter = TimeCounter(self.update_interval_ms)
         self.player.reset()
 
-    def _move_internal(self, direction: Direction, duration_ms: int) -> MoveResult:
+    def _move_internal(self, direction: Direction) -> MoveResult:
+        if self.moving_figure.is_moving():
+            return MoveResult.Nothing
+
         if not self._move_collides(self.moving_figure, direction):
-            self.moving_figure.move(direction, duration_ms)
+            self.moving_figure.move(direction, self.movement_duration_ms)
             return MoveResult.HasMoved
 
         # Collision on down movement -> Spawn a new figure
@@ -114,15 +123,23 @@ class Tetris:
             else:
                 return MoveResult.HasSpawnedFigure
         else:
-            return MoveResult.Nothing
+            return MoveResult.HasCollided
 
     def move(self, direction: Direction) -> MoveResult:
         move_result = MoveResult.Nothing
 
-        if self.manual_move_time_counter.is_elapsed():
-            move_result = self._move_internal(
-                direction, self.movement_duration_ms)
+        # No delay for rotation
+        if direction is Direction.up:
+            move_result = self._move_internal(direction)
+            if move_result is MoveResult.Nothing:
+                self.next_move = direction
+        # But a delay for movement
+        elif self.manual_move_time_counter.is_elapsed():
+            move_result = self._move_internal(direction)
             self.manual_move_time_counter.restart()
+            if move_result is MoveResult.Nothing:
+                self.next_move = direction
+
         self.moving_figure.update_position()
 
         return move_result
@@ -155,13 +172,23 @@ class Tetris:
 
         return scored_rows
 
-    def auto_move_down(self) -> MoveResult:
+    def update(self) -> MoveResult:
         move_result = MoveResult.Nothing
 
         if self.auto_move_time_counter.is_elapsed():
-            move_result = self._move_internal(
-                Direction.down, self.movement_duration_ms)
+            move_result = self._move_internal(Direction.down)
             self.auto_move_time_counter.restart()
+            if move_result is MoveResult.Nothing:
+                self.is_auto_move_pending = True
+        elif self.is_auto_move_pending:
+            move_result = self._move_internal(Direction.down)
+            if move_result is not MoveResult.Nothing:
+                self.is_auto_move_pending = False
+        elif self.next_move:
+            move_result = self._move_internal(self.next_move)
+            if move_result is not MoveResult.Nothing:
+                self.next_move = None
+
         self.moving_figure.update_position()
 
         return move_result
