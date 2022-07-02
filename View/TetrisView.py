@@ -85,7 +85,7 @@ class TetrisView:
     def _to_absolute_position(self, rects: list[pygame.Rect]) -> list[pygame.Rect]:
         updated_rects = deepcopy(rects)
         for rect in updated_rects:
-            rect.x += self.tetris_area_x_position
+            rect.x += self.x_position
             rect.y += self.y_position
         return updated_rects
 
@@ -112,7 +112,7 @@ class TetrisView:
 
     def blit(self, parent_surface: pygame.Surface):
         parent_surface.blit(
-            self.surface, (self.tetris_area_x_position, self.y_position))
+            self.surface, (self.x_position, self.y_position))
 
     def clear_moving_figure(self) -> list[pygame.Rect]:
         updated_rects = self.figure_sprite.clear(self.surface)
